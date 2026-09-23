@@ -1,0 +1,8 @@
+/vendor/
+/node_modules/
+/build/
+composer.lock
+.DS_Store
+Thumbs.db
+desktop.ini
+/.impeccable/
