@@ -1,10 +1,10 @@
 === SEO Health Check ===
-Contributors: pdk
+Contributors: deechtemika
 Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -108,6 +108,9 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 4. The settings page.
 
 == Changelog ==
+
+= 0.1.1 =
+* Author name set to Mika Leonard.
 
 = 0.1.0 =
 * First version: per-page scan, overview, CSV export, launch checks and settings.
