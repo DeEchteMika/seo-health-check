@@ -228,7 +228,7 @@ class SEOHC_Admin {
 		}
 
 		// Fallback for sites where WP-Cron is disabled or blocked: run a batch in this request.
-		if ( SEOHC_Scan_Queue::is_stalled() ) {
+		if ( SEOHC_Scan_Queue::needs_ajax_runner() ) {
 			SEOHC_Scan_Queue::process_batch();
 		}
 

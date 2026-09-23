@@ -53,6 +53,7 @@ class SEOHC_Scan_Queue {
 				'processed'     => 0,
 				'last_id'       => 0,
 				'post_types'    => array(),
+				'ajax_driven'   => false,
 			)
 		);
 	}
@@ -64,6 +65,16 @@ class SEOHC_Scan_Queue {
 	 */
 	private static function set_state( array $state ) {
 		update_option( self::STATE_KEY, $state, false );
+	}
+
+	/**
+	 * Scan status read from the database, bypassing the per-request option cache.
+	 *
+	 * @return string
+	 */
+	private static function fresh_status() {
+		wp_cache_delete( self::STATE_KEY, 'options' );
+		return self::get_state()['status'];
 	}
 
 	/**
@@ -86,6 +97,7 @@ class SEOHC_Scan_Queue {
 		}
 
 		$post_types = (array) SEOHC_Settings::get( 'post_types' );
+		SEOHC_Link_Checker::reset_cache();
 
 		self::set_state(
 			array(
@@ -97,6 +109,7 @@ class SEOHC_Scan_Queue {
 				'processed'     => 0,
 				'last_id'       => 0,
 				'post_types'    => $post_types,
+				'ajax_driven'   => false,
 			)
 		);
 
@@ -133,6 +146,12 @@ class SEOHC_Scan_Queue {
 
 		foreach ( $ids as $post_id ) {
 			SEOHC_Scanner::scan_post( $post_id );
+
+			// Stop when the scan was cancelled from another request in the meantime.
+			if ( 'running' !== self::fresh_status() ) {
+				delete_option( self::LOCK_KEY );
+				return;
+			}
 
 			$state['last_id']       = $post_id;
 			$state['processed']     = (int) $state['processed'] + 1;
@@ -208,13 +227,27 @@ class SEOHC_Scan_Queue {
 	}
 
 	/**
-	 * Whether the queue looks stuck (no progress for a while), e.g. because WP-Cron is disabled.
+	 * Whether the admin progress poll should run the next batch itself.
+	 *
+	 * That happens when the queue made no progress for a while (WP-Cron disabled or loopback
+	 * requests blocked). From then on the poll keeps driving the scan, so it does not wait again.
 	 *
 	 * @return bool
 	 */
-	public static function is_stalled() {
+	public static function needs_ajax_runner() {
 		$state = self::get_state();
-		return 'running' === $state['status'] && time() - (int) $state['last_activity'] > 30;
+		if ( 'running' !== $state['status'] ) {
+			return false;
+		}
+		if ( ! empty( $state['ajax_driven'] ) ) {
+			return true;
+		}
+		if ( time() - (int) $state['last_activity'] > 15 ) {
+			$state['ajax_driven'] = true;
+			self::set_state( $state );
+			return true;
+		}
+		return false;
 	}
 
 	/**

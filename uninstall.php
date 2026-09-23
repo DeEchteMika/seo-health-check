@@ -27,7 +27,7 @@ function seohc_uninstall_site() {
 	);
 	// phpcs:enable
 
-	foreach ( array( 'seohc_settings', 'seohc_db_version', 'seohc_scan_state', 'seohc_scan_lock', 'seohc_launch_results' ) as $option ) {
+	foreach ( array( 'seohc_settings', 'seohc_db_version', 'seohc_scan_state', 'seohc_scan_lock', 'seohc_launch_results', 'seohc_link_cache_generation' ) as $option ) {
 		delete_option( $option );
 	}
 

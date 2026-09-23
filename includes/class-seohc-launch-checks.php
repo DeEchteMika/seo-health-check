@@ -285,7 +285,10 @@ class SEOHC_Launch_Checks {
 	 * @return array
 	 */
 	private static function check_not_found() {
-		$response = wp_remote_get( home_url( '/shc-check-' . wp_generate_password( 12, false ) . '/' ), self::request_args() );
+		$response = wp_remote_get(
+			home_url( '/seohc-check-' . strtolower( wp_generate_password( 12, false ) ) . '/' ),
+			array_merge( self::request_args(), array( 'redirection' => 0 ) )
+		);
 		if ( is_wp_error( $response ) ) {
 			return array( self::WARNING, $response->get_error_message() );
 		}
@@ -293,8 +296,12 @@ class SEOHC_Launch_Checks {
 		if ( 404 === $code ) {
 			return array( self::PASS, __( 'Unknown URLs return status 404. Check the page design yourself.', 'seo-health-check' ) );
 		}
+		if ( $code >= 300 && $code < 400 ) {
+			/* translators: 1: HTTP status code, 2: redirect target. */
+			return array( self::WARNING, sprintf( __( 'Unknown URLs redirect (%1$d) to %2$s instead of showing a 404 page.', 'seo-health-check' ), $code, wp_remote_retrieve_header( $response, 'location' ) ) );
+		}
 		/* translators: %d: HTTP status code. */
-		return array( self::FAIL, sprintf( __( 'Unknown URLs return status %d instead of 404.', 'seo-health-check' ), $code ) );
+		return array( self::FAIL, sprintf( __( 'Unknown URLs return status %d instead of 404, so search engines may index error pages.', 'seo-health-check' ), $code ) );
 	}
 
 	/**
@@ -497,6 +504,8 @@ class SEOHC_Launch_Checks {
 	private static function check_redirects() {
 		$canonical = trailingslashit( home_url() );
 		$host      = (string) wp_parse_url( $canonical, PHP_URL_HOST );
+		$port      = wp_parse_url( $canonical, PHP_URL_PORT );
+		$port      = $port ? ':' . $port : '';
 		$bare      = preg_replace( '/^www\./i', '', $host );
 		$hosts     = array( $bare );
 
@@ -508,7 +517,7 @@ class SEOHC_Launch_Checks {
 		$problems = array();
 		foreach ( $hosts as $variant_host ) {
 			foreach ( array( 'http', 'https' ) as $scheme ) {
-				$variant = $scheme . '://' . $variant_host . '/';
+				$variant = $scheme . '://' . $variant_host . $port . '/';
 				if ( $variant === $canonical ) {
 					continue;
 				}

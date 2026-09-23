@@ -12,6 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class SEOHC_Link_Checker {
 
+	const GENERATION_KEY = 'seohc_link_cache_generation';
+
 	/**
 	 * Results cache for the current request.
 	 *
@@ -36,7 +38,8 @@ class SEOHC_Link_Checker {
 			return '' === self::$cache[ $url ] ? null : self::$cache[ $url ];
 		}
 
-		$transient = 'seohc_link_' . md5( $url );
+		// The generation changes with every full scan, so each scan starts with an empty cache.
+		$transient = 'seohc_link_' . md5( (int) get_option( self::GENERATION_KEY, 0 ) . '|' . $url );
 		$cached    = get_transient( $transient );
 		if ( false === $cached ) {
 			$cached = (string) self::resolve( $url );
@@ -45,6 +48,14 @@ class SEOHC_Link_Checker {
 
 		self::$cache[ $url ] = $cached;
 		return '' === $cached ? null : $cached;
+	}
+
+	/**
+	 * Invalidates all cached link results. Old entries expire on their own.
+	 */
+	public static function reset_cache() {
+		update_option( self::GENERATION_KEY, (int) get_option( self::GENERATION_KEY, 0 ) + 1, false );
+		self::$cache = array();
 	}
 
 	/**
@@ -100,9 +111,138 @@ class SEOHC_Link_Checker {
 			return sprintf( __( 'Links to content with status "%s".', 'seo-health-check' ), $status );
 		}
 
-		// Everything else (archives, custom routes): request the URL.
+		// Everything else: match the URL against the rewrite rules, like WordPress does for a visitor.
+		$verdict = self::resolve_with_rewrite_rules( $url );
+		if ( 'ok' === $verdict ) {
+			return '';
+		}
+
+		// Unknown or apparently broken: confirm over HTTP, which also follows redirects set up in
+		// plugins such as Redirection. When the request itself fails, the rewrite verdict stands.
+		$code = self::http_status( $url );
+		if ( null === $code ) {
+			return 'broken' === $verdict ? __( 'No page matches this URL.', 'seo-health-check' ) : '';
+		}
+		if ( in_array( $code, array( 404, 410 ), true ) ) {
+			/* translators: %d: HTTP status code. */
+			return sprintf( __( 'Returns HTTP %d.', 'seo-health-check' ), $code );
+		}
+		return '';
+	}
+
+	/**
+	 * Resolves an internal URL through the rewrite rules without an HTTP request.
+	 *
+	 * Based on the matching in WP::parse_request() and url_to_postid(), but without firing
+	 * request hooks, so plugins cannot redirect or exit during a scan.
+	 *
+	 * @param string $url Absolute internal URL.
+	 * @return string 'ok', 'broken' or 'unknown'.
+	 */
+	private static function resolve_with_rewrite_rules( $url ) {
+		global $wp_rewrite;
+
+		$path      = rawurldecode( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+		$home_path = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+		if ( '' !== $home_path && 0 === strpos( $path, $home_path ) ) {
+			$path = substr( $path, strlen( $home_path ) );
+		}
+		$path = trim( $path, '/' );
+
+		// The homepage, or a query string URL (plain permalinks) that url_to_postid() did not resolve.
+		if ( '' === $path ) {
+			return wp_parse_url( $url, PHP_URL_QUERY ) ? 'unknown' : 'ok';
+		}
+
+		// Real files next to WordPress (robots.txt, PDFs in a custom folder) are served by the web server.
+		if ( preg_match( '/\.[a-z0-9]{2,5}$/i', $path ) && file_exists( ABSPATH . $path ) ) {
+			return 'ok';
+		}
+
+		$rules = $wp_rewrite->wp_rewrite_rules();
+		if ( empty( $rules ) ) {
+			return 'unknown';
+		}
+
+		foreach ( (array) $rules as $match => $query ) {
+			if ( ! preg_match( "#^{$match}#", $path, $matches ) && ! preg_match( "#^{$match}#", urldecode( $path ), $matches ) ) {
+				continue;
+			}
+
+			// Verbose page rules match every path; WordPress skips them when the page does not exist.
+			if ( $wp_rewrite->use_verbose_page_rules && preg_match( '/pagename=\$matches\[([0-9]+)\]/', $query, $varmatch ) ) {
+				if ( ! get_page_by_path( $matches[ $varmatch[1] ] ) ) {
+					continue;
+				}
+			}
+
+			$query = preg_replace( '!^.+\?!', '', $query );
+			parse_str( WP_MatchesMapRegex::apply( $query, $matches ), $vars );
+
+			return self::verdict_for_query( $vars );
+		}
+
+		// No rule matches: WordPress would show its 404 page.
+		return 'broken';
+	}
+
+	/**
+	 * Runs the query a matched rewrite rule produces and decides whether it finds something.
+	 *
+	 * @param array $vars Query vars from the rewrite rule.
+	 * @return string 'ok', 'broken' or 'unknown'.
+	 */
+	private static function verdict_for_query( array $vars ) {
+		$public = array_flip( $GLOBALS['wp']->public_query_vars );
+		$vars   = array_intersect_key( $vars, $public );
+		if ( empty( $vars ) ) {
+			return 'unknown';
+		}
+
+		$query = new WP_Query();
+		$query->query(
+			array_merge(
+				$vars,
+				array(
+					'posts_per_page'         => 1,
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+				)
+			)
+		);
+
+		if ( $query->is_singular() ) {
+			return $query->have_posts() ? 'ok' : 'broken';
+		}
+		if ( $query->is_category() || $query->is_tag() || $query->is_tax() || $query->is_author() ) {
+			return $query->get_queried_object() ? 'ok' : 'broken';
+		}
+		if ( $query->is_404() ) {
+			return 'broken';
+		}
+		return 'ok';
+	}
+
+	/**
+	 * HTTP status of a URL after redirects.
+	 *
+	 * @param string $url URL.
+	 * @return int|null Null when the request failed.
+	 */
+	private static function http_status( $url ) {
+		/**
+		 * Filters whether suspected broken links are confirmed with an HTTP request.
+		 *
+		 * @param bool $enabled Default true.
+		 */
+		if ( ! apply_filters( 'seo_health_check_link_http_check', true ) ) {
+			return null;
+		}
+
 		$args     = array(
-			'timeout'     => 10,
+			'timeout'     => 5,
 			'redirection' => 5,
 			'user-agent'  => 'SEO Health Check/' . SEOHC_VERSION . '; ' . home_url(),
 			/** This filter is documented in wp-includes/class-wp-http-streams.php */
@@ -113,17 +253,7 @@ class SEOHC_Link_Checker {
 			$response = wp_remote_get( $url, $args );
 		}
 
-		// Network errors are not reported: we cannot tell whether the link is broken.
-		if ( is_wp_error( $response ) ) {
-			return '';
-		}
-
-		$code = (int) wp_remote_retrieve_response_code( $response );
-		if ( in_array( $code, array( 404, 410 ), true ) ) {
-			/* translators: %d: HTTP status code. */
-			return sprintf( __( 'Returns HTTP %d.', 'seo-health-check' ), $code );
-		}
-		return '';
+		return is_wp_error( $response ) ? null : (int) wp_remote_retrieve_response_code( $response );
 	}
 
 	/**

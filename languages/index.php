@@ -1,2 +1,6 @@
 <?php
-// Silence is golden.
+/**
+ * Silence is golden.
+ *
+ * @package SEO_Health_Check
+ */
