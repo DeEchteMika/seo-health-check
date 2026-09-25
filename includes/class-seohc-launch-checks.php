@@ -100,6 +100,7 @@ class SEOHC_Launch_Checks {
 			array( 'before', 'required_plugins', __( 'Standard plugins installed', 'seo-health-check' ) ),
 			array( 'before', 'updates', __( 'WordPress, plugins and themes up to date', 'seo-health-check' ) ),
 			array( 'before', 'menu_unpublished', __( 'Menus point at published pages', 'seo-health-check' ) ),
+			array( 'before', 'mail_delivery', __( 'Mail delivery set up', 'seo-health-check' ) ),
 			array( 'launch', 'https', __( 'HTTPS', 'seo-health-check' ) ),
 			array( 'launch', 'dev_links', __( 'No links to the development site', 'seo-health-check' ) ),
 			array( 'launch', 'analytics', __( 'Google Analytics / Tag Manager', 'seo-health-check' ) ),
@@ -448,9 +449,38 @@ class SEOHC_Launch_Checks {
 		if ( is_wp_error( $html ) ) {
 			return array( self::WARNING, $html->get_error_message() );
 		}
-		if ( preg_match( '#googletagmanager\.com/(gtag/js|gtm\.js)|[\'"]G-[A-Z0-9]{6,}[\'"]|GTM-[A-Z0-9]{4,}#', $html ) ) {
-			return array( self::PASS, __( 'Google Analytics or Tag Manager code was found.', 'seo-health-check' ) );
+
+		$expected = (string) SEOHC_Settings::get( 'analytics_id' );
+		$found    = preg_match( '#G-[A-Z0-9]{6,}|GTM-[A-Z0-9]{4,}|UA-\d{4,}-\d+#', $html, $match ) ? $match[0] : '';
+
+		// With a code filled in, "there is some code" is not good enough: carrying the wrong
+		// one over from the old site looks fine and quietly measures nothing.
+		if ( '' !== $expected ) {
+			if ( false !== stripos( $html, $expected ) ) {
+				/* translators: %s: measurement code such as G-ABC123DEF4. */
+				return array( self::PASS, sprintf( __( 'The measurement code %s is on the homepage.', 'seo-health-check' ), $expected ) );
+			}
+
+			if ( '' !== $found ) {
+				return array(
+					self::FAIL,
+					sprintf(
+						/* translators: 1: expected measurement code, 2: the code that was found. */
+						__( 'The homepage uses %2$s, not %1$s. The wrong measurement code was carried over.', 'seo-health-check' ),
+						$expected,
+						$found
+					),
+				);
+			}
+
+			/* translators: %s: measurement code. */
+			return array( self::FAIL, sprintf( __( 'The measurement code %s was not found on the homepage.', 'seo-health-check' ), $expected ) );
 		}
+
+		if ( '' !== $found || preg_match( '#googletagmanager\.com/(gtag/js|gtm\.js)#', $html ) ) {
+			return array( self::PASS, __( 'Google Analytics or Tag Manager code was found. Fill in the measurement code under Settings to check that it is the right one.', 'seo-health-check' ) );
+		}
+
 		return array( self::INFO, __( 'No Google Analytics or Tag Manager code found. Only needed when the client uses it.', 'seo-health-check' ) );
 	}
 
@@ -680,26 +710,41 @@ class SEOHC_Launch_Checks {
 			return array( self::WARNING, __( 'The domain of the site could not be determined.', 'seo-health-check' ) );
 		}
 
-		$spf   = self::has_txt_record( $host, 'v=spf1' );
-		$dmarc = self::has_txt_record( '_dmarc.' . $host, 'v=DMARC1' );
+		$records = array(
+			'SPF'   => self::has_txt_record( $host, 'v=spf1' ),
+			'DMARC' => self::has_txt_record( '_dmarc.' . $host, 'v=DMARC1' ),
+		);
 
-		if ( $spf && $dmarc ) {
+		// DKIM lives behind a name only the mail provider knows, so it is checked only once
+		// that selector has been filled in.
+		$selector = (string) SEOHC_Settings::get( 'dkim_selector' );
+		if ( '' !== $selector ) {
+			$records['DKIM'] = self::has_txt_record( $selector . '._domainkey.' . $host, 'v=DKIM1' );
+		}
+
+		$missing = array_keys(
+			array_filter(
+				$records,
+				static function ( $present ) {
+					return ! $present;
+				}
+			)
+		);
+
+		$note = '' === $selector
+			? ' ' . __( 'DKIM is not checked: fill in the selector of your mail server under Settings.', 'seo-health-check' )
+			: '';
+
+		if ( empty( $missing ) ) {
 			return array(
 				self::PASS,
 				sprintf(
-					/* translators: %s: domain name. */
-					__( 'SPF and DMARC are set for %s. DKIM can only be checked by hand, because it needs the selector of the mail server.', 'seo-health-check' ),
+					/* translators: 1: record names such as "SPF, DMARC", 2: domain name. */
+					__( '%1$s are set for %2$s.', 'seo-health-check' ),
+					implode( ', ', array_keys( $records ) ),
 					$host
-				),
+				) . $note,
 			);
-		}
-
-		$missing = array();
-		if ( ! $spf ) {
-			$missing[] = 'SPF';
-		}
-		if ( ! $dmarc ) {
-			$missing[] = 'DMARC';
 		}
 
 		return array(
@@ -709,7 +754,7 @@ class SEOHC_Launch_Checks {
 				__( 'No %1$s record found for %2$s. Mail from this domain, including the scan report, is likely to end up in the spam folder.', 'seo-health-check' ),
 				implode( ' and no ', $missing ),
 				$host
-			),
+			) . $note,
 		);
 	}
 
@@ -731,6 +776,84 @@ class SEOHC_Launch_Checks {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Other plugins that can take over sending mail, keyed by plugin folder.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function smtp_plugins() {
+		return apply_filters(
+			'seo_health_check_smtp_plugins',
+			array(
+				'easy-wp-smtp' => 'Easy WP SMTP',
+				'post-smtp'    => 'Post SMTP',
+				'fluent-smtp'  => 'FluentSMTP',
+				'smtp-mailer'  => 'SMTP Mailer',
+				'gmail-smtp'   => 'Gmail SMTP',
+			)
+		);
+	}
+
+	/**
+	 * Whether mail actually leaves the site.
+	 *
+	 * Having WP Mail SMTP installed says nothing: out of the box it is set to the same PHP
+	 * mail function it is meant to replace, and that is exactly the state a site is left in
+	 * when someone activates the plugin and moves on.
+	 *
+	 * @return array
+	 */
+	private static function check_mail_delivery() {
+		$active = self::active_plugin_folders();
+
+		if ( ! in_array( 'wp-mail-smtp', $active, true ) ) {
+			foreach ( self::smtp_plugins() as $folder => $name ) {
+				if ( in_array( $folder, $active, true ) ) {
+					return array(
+						self::INFO,
+						sprintf(
+							/* translators: %s: plugin name. */
+							__( '%s takes care of the mail. This check can only look inside WP Mail SMTP, so check its settings yourself.', 'seo-health-check' ),
+							$name
+						),
+					);
+				}
+			}
+
+			return array( self::FAIL, __( 'No mail plugin is active, so WordPress hands mail to the PHP mail function. On most hosting that mail never arrives.', 'seo-health-check' ) );
+		}
+
+		$settings = get_option( 'wp_mail_smtp', array() );
+		$mail     = isset( $settings['mail'] ) && is_array( $settings['mail'] ) ? $settings['mail'] : array();
+		$mailer   = isset( $mail['mailer'] ) ? (string) $mail['mailer'] : '';
+		$from     = isset( $mail['from_email'] ) ? (string) $mail['from_email'] : '';
+
+		if ( '' === $mailer || 'mail' === $mailer ) {
+			return array( self::FAIL, __( 'WP Mail SMTP is active but still set to the PHP mail function, which is what it starts on. Choose a real mailer and fill in its details.', 'seo-health-check' ) );
+		}
+
+		if ( '' === $from || ! is_email( $from ) ) {
+			return array(
+				self::WARNING,
+				sprintf(
+					/* translators: %s: name of the mailer, for example smtp. */
+					__( 'WP Mail SMTP sends through %s, but no sender address is filled in.', 'seo-health-check' ),
+					$mailer
+				),
+			);
+		}
+
+		return array(
+			self::PASS,
+			sprintf(
+				/* translators: 1: name of the mailer, 2: sender address. */
+				__( 'WP Mail SMTP sends through %1$s, from %2$s.', 'seo-health-check' ),
+				$mailer,
+				$from
+			),
+		);
 	}
 
 	/**

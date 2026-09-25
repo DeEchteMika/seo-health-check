@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.6.0
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,6 +175,11 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.7.0 =
+* New launch check: whether mail can actually leave the site. WP Mail SMTP being active is not enough, because it starts out pointing at the same PHP mail function it replaces.
+* The DNS check now covers DKIM as well, once you fill in the selector of your mail server under Settings.
+* The analytics check can compare against the measurement code you expect, so carrying the wrong one over from the old site is caught instead of passing as "some code is there".
 
 = 0.6.0 =
 * New launch check: menu items that lead to a page which is not published, and a reminder about pages still waiting for their text.

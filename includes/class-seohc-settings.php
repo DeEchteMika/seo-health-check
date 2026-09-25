@@ -35,6 +35,8 @@ class SEOHC_Settings {
 			'rescan_on_save'         => 1,
 			'footer_credit'          => '',
 			'dev_domains'            => '',
+			'dkim_selector'          => '',
+			'analytics_id'           => '',
 		);
 	}
 
@@ -203,6 +205,30 @@ class SEOHC_Settings {
 			)
 		);
 		add_settings_field(
+			'analytics_id',
+			__( 'Measurement code', 'seo-health-check' ),
+			array( __CLASS__, 'field_text' ),
+			self::PAGE_SLUG,
+			'seohc_launch',
+			array(
+				'key'         => 'analytics_id',
+				'label_for'   => 'seohc_analytics_id',
+				'description' => __( 'The Google Analytics or Tag Manager code the site should use, for example G-ABC123DEF4. Fill in the one from the old site and the check confirms it really was carried over. Leave empty to only check that some code is present.', 'seo-health-check' ),
+			)
+		);
+		add_settings_field(
+			'dkim_selector',
+			__( 'DKIM selector', 'seo-health-check' ),
+			array( __CLASS__, 'field_text' ),
+			self::PAGE_SLUG,
+			'seohc_launch',
+			array(
+				'key'         => 'dkim_selector',
+				'label_for'   => 'seohc_dkim_selector',
+				'description' => __( 'The selector your mail server signs with, for example "default" or "google". Your mail provider knows it. Without it DKIM cannot be looked up, because the record hides behind a name only they know.', 'seo-health-check' ),
+			)
+		);
+		add_settings_field(
 			'dev_domains',
 			__( 'Development domains', 'seo-health-check' ),
 			array( __CLASS__, 'field_text' ),
@@ -269,6 +295,12 @@ class SEOHC_Settings {
 		);
 
 		$clean['dev_domains'] = implode( ', ', array_unique( $domains ) );
+
+		// A DKIM selector is a host label, a measurement code is letters, digits and dashes.
+		$selector               = isset( $input['dkim_selector'] ) ? sanitize_text_field( $input['dkim_selector'] ) : '';
+		$clean['dkim_selector'] = trim( preg_replace( '/[^A-Za-z0-9._-]/', '', $selector ), '.' );
+		$analytics              = isset( $input['analytics_id'] ) ? sanitize_text_field( $input['analytics_id'] ) : '';
+		$clean['analytics_id']  = strtoupper( preg_replace( '/[^A-Za-z0-9-]/', '', $analytics ) );
 
 		return $clean;
 	}
