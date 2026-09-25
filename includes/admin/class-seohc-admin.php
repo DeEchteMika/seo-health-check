@@ -14,6 +14,12 @@ class SEOHC_Admin {
 
 	const MENU_SLUG  = 'seo-health-check';
 	const PAGES_SLUG = 'seo-health-check-pages';
+	const SCANS_SLUG = 'seo-health-check-scans';
+
+	/**
+	 * Values the status filter accepts, next to an empty one for every open issue.
+	 */
+	const STATUSES = array( 'new', 'unchanged', 'resolved' );
 
 	/**
 	 * Hook suffixes of the plugin's admin pages.
@@ -61,10 +67,11 @@ class SEOHC_Admin {
 		);
 		add_submenu_page( self::MENU_SLUG, __( 'SEO issues', 'seo-health-check' ), __( 'Issues', 'seo-health-check' ), $cap, self::MENU_SLUG, array( __CLASS__, 'render_overview' ) );
 		$pages    = add_submenu_page( self::MENU_SLUG, __( 'Page scores', 'seo-health-check' ), __( 'Page scores', 'seo-health-check' ), $cap, self::PAGES_SLUG, array( __CLASS__, 'render_pages' ) );
+		$scans    = add_submenu_page( self::MENU_SLUG, __( 'Scan history', 'seo-health-check' ), __( 'Scans', 'seo-health-check' ), $cap, self::SCANS_SLUG, array( 'SEOHC_Scans_Page', 'render_page' ) );
 		$launch   = add_submenu_page( self::MENU_SLUG, __( 'Launch checks', 'seo-health-check' ), __( 'Launch checks', 'seo-health-check' ), $cap, 'seo-health-check-launch', array( 'SEOHC_Launch_Checks', 'render_page' ) );
 		$settings = add_submenu_page( self::MENU_SLUG, __( 'SEO Health Check settings', 'seo-health-check' ), __( 'Settings', 'seo-health-check' ), $cap, SEOHC_Settings::PAGE_SLUG, array( 'SEOHC_Settings', 'render_page' ) );
 
-		self::$hooks = array( $overview, $pages, $launch, $settings );
+		self::$hooks = array( $overview, $pages, $scans, $launch, $settings );
 
 		add_action( 'load-' . $overview, array( __CLASS__, 'add_screen_options' ) );
 		add_action( 'load-' . $pages, array( __CLASS__, 'add_pages_screen_options' ) );
@@ -167,7 +174,7 @@ class SEOHC_Admin {
 		$search     = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 		$orderby    = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'post_title';
 		$order      = isset( $_GET['order'] ) ? sanitize_key( wp_unslash( $_GET['order'] ) ) : 'asc';
-		$only_new   = ! empty( $_GET['seohc_new'] );
+		$status     = isset( $_GET['seohc_status'] ) ? sanitize_key( wp_unslash( $_GET['seohc_status'] ) ) : '';
 		// phpcs:enable
 
 		return array(
@@ -177,8 +184,8 @@ class SEOHC_Admin {
 			'search'     => $search,
 			'orderby'    => array_key_exists( $orderby, SEOHC_Repository::SORTABLE ) ? $orderby : 'post_title',
 			'order'      => 'desc' === $order ? 'DESC' : 'ASC',
-			'new_since'  => $only_new ? self::new_since() : '',
-			'only_new'   => $only_new,
+			'status'     => in_array( $status, self::STATUSES, true ) ? $status : '',
+			'new_since'  => self::new_since(),
 		);
 	}
 
@@ -211,8 +218,7 @@ class SEOHC_Admin {
 	 * @return string Empty when the site was never scanned.
 	 */
 	public static function new_since() {
-		$state = SEOHC_Scan_Queue::get_state();
-		return (string) $state['started_at'];
+		return SEOHC_Repository::scan_started_at();
 	}
 
 	/**
@@ -386,7 +392,7 @@ class SEOHC_Admin {
 						'seohc_post_type' => $filters['post_type'],
 						'severity'        => $filters['severity'],
 						's'               => $filters['search'],
-						'seohc_new'       => $filters['only_new'] ? '1' : '',
+						'seohc_status'    => $filters['status'],
 					)
 				),
 				admin_url( 'admin-post.php' )
@@ -466,9 +472,47 @@ class SEOHC_Admin {
 				</span>
 			</div>
 		</div>
-		<?php if ( ! $previous ) : ?>
+		<?php if ( $previous ) : ?>
+			<?php self::render_change_line(); ?>
+		<?php else : ?>
 			<p class="description"><?php esc_html_e( 'After the next scan you will also see what changed since this one.', 'seo-health-check' ); ?></p>
 		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * One line naming what the last scan added and fixed, with a link to each list.
+	 */
+	private static function render_change_line() {
+		$changes = SEOHC_Repository::change_counts( self::new_since() );
+		$base    = admin_url( 'admin.php?page=' . self::MENU_SLUG );
+		?>
+		<p class="seohc-change">
+			<a href="<?php echo esc_url( add_query_arg( 'seohc_status', 'new', $base ) ); ?>" class="seohc-change__link">
+				<span class="seohc-badge seohc-badge--new"><?php esc_html_e( 'New', 'seo-health-check' ); ?></span>
+				<?php
+				printf(
+					/* translators: %s: number of issues. */
+					esc_html( _n( '%s issue appeared', '%s issues appeared', $changes['new'], 'seo-health-check' ) ),
+					esc_html( number_format_i18n( $changes['new'] ) )
+				);
+				?>
+			</a>
+			<a href="<?php echo esc_url( add_query_arg( 'seohc_status', 'resolved', $base ) ); ?>" class="seohc-change__link">
+				<span class="seohc-badge seohc-badge--resolved"><?php esc_html_e( 'Fixed', 'seo-health-check' ); ?></span>
+				<?php
+				printf(
+					/* translators: %s: number of issues. */
+					esc_html( _n( '%s issue was solved', '%s issues were solved', $changes['resolved'], 'seo-health-check' ) ),
+					esc_html( number_format_i18n( $changes['resolved'] ) )
+				);
+				?>
+			</a>
+			<span class="seohc-change__note">
+				<?php esc_html_e( 'since the previous scan.', 'seo-health-check' ); ?>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::SCANS_SLUG ) ); ?>"><?php esc_html_e( 'See all scans', 'seo-health-check' ); ?></a>
+			</span>
+		</p>
 		<?php
 	}
 

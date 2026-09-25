@@ -99,6 +99,10 @@ class SEOHC_Scan_Queue {
 		$post_types = (array) SEOHC_Settings::get( 'post_types' );
 		SEOHC_Link_Checker::reset_cache();
 
+		// Freeze the scores this scan starts from, so the page overview can show per page what
+		// changed. Single rescans leave this alone: they would compare a page with itself.
+		SEOHC_Repository::snapshot_scores();
+
 		self::set_state(
 			array(
 				'status'        => 'running',

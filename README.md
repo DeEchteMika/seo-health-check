@@ -8,7 +8,9 @@ A WordPress plugin that scans posts and pages for common on-page SEO problems an
 - **thin content** (below a word count you choose)
 - **broken internal links**
 
-Every page also gets a **score from 0 to 100**, each scan is **compared with the previous one** (new issues are marked as such), and **alt texts, SEO titles and meta descriptions can be edited straight from the overview**.
+Every page also gets a **score from 0 to 100**, and **alt texts, SEO titles and meta descriptions can be edited straight from the overview**.
+
+Every scan is compared with the one before it. Each issue is marked **New**, **Unchanged** or **Fixed**, solved issues stay in the list until the next scan, and a **Scans** page keeps the last twenty scans with what each one added and solved.
 
 A separate **Launch checks** page checks site-wide go-live settings such as search engine visibility, HTTPS, sitemap, redirects and pending updates.
 
@@ -54,6 +56,7 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/class-seohc-settings.php` | Settings API |
 | `includes/admin/class-seohc-issues-list-table.php` | The issues overview (`WP_List_Table`) |
 | `includes/admin/class-seohc-pages-list-table.php` | The page scores overview (`WP_List_Table`) |
+| `includes/admin/class-seohc-scans-page.php` | The scan history screen |
 | `includes/admin/class-seohc-inline-edit.php` | Saving alt texts, titles and descriptions from the overview |
 | `includes/admin/class-seohc-admin.php` | Menus, screens, form handlers and the progress endpoint |
 

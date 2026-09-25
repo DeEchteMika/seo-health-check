@@ -161,7 +161,7 @@
 	padding: 2px 12px;
 }
 
-/* Issues that appeared in the most recent scan. */
+/* What the most recent scan did with an issue. */
 .seohc-badge--new {
 	display: inline-block;
 	padding: 1px 7px;
@@ -174,8 +174,36 @@
 	letter-spacing: 0.04em;
 }
 
+.seohc-badge--resolved {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 10px;
+	background: #edfaef;
+	color: #00701f;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.seohc-badge--same {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 10px;
+	background: #f0f0f1;
+	color: #646970;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
 .seohc-row--new td:first-child {
 	box-shadow: inset 3px 0 0 #2271b1;
+}
+
+.seohc-row--fixed td:first-child {
+	box-shadow: inset 3px 0 0 #00a32a;
 }
 
 .seohc-row--fixed {
@@ -186,12 +214,41 @@
 	text-decoration: line-through;
 }
 
-.seohc-filter-new {
+/* The line under the cards: what the last scan added and solved. */
+.seohc-change {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 16px;
+	margin: 4px 0 16px;
+}
+
+.seohc-change__link {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	margin: 0 8px 0 4px;
-	vertical-align: middle;
+	gap: 6px;
+	text-decoration: none;
+}
+
+.seohc-change__note {
+	color: #50575e;
+}
+
+/* Scan history. */
+.seohc-intro {
+	max-width: 46em;
+}
+
+.seohc-runs {
+	margin-bottom: 24px;
+}
+
+.seohc-runs td {
+	font-variant-numeric: tabular-nums;
+}
+
+.seohc-runs th {
+	font-weight: 600;
 }
 
 /* Fixing an issue without leaving the overview. */

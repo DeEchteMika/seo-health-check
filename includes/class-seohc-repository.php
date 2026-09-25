@@ -66,6 +66,7 @@ class SEOHC_Repository {
 		'post_title'  => 'p.post_title',
 		'post_type'   => 'p.post_type',
 		'score'       => 'pg.score',
+		'change'      => '( pg.score - pg.previous_score )',
 		'issue_count' => 'pg.issue_count',
 		'word_count'  => 'pg.word_count',
 		'scanned_at'  => 'pg.scanned_at',
@@ -94,6 +95,11 @@ class SEOHC_Repository {
 	/**
 	 * Replaces all stored results for one post.
 	 *
+	 * Issues that are found again keep the date they were first seen, issues that have
+	 * disappeared are marked resolved instead of deleted, and issues that were already
+	 * resolved by an earlier scan are dropped. "Fixed" therefore always means "fixed since
+	 * the previous scan of this page".
+	 *
 	 * @param int   $post_id Post ID.
 	 * @param array $page    Page summary: seo_title, meta_description, word_count.
 	 * @param array $issues  List of arrays with 'type' and 'details'.
@@ -101,34 +107,74 @@ class SEOHC_Repository {
 	public static function save_post_result( $post_id, array $page, array $issues ) {
 		global $wpdb;
 
-		$now = current_time( 'mysql', true );
+		$post_id = (int) $post_id;
+		$now     = current_time( 'mysql', true );
+		$table   = self::issues_table();
 
-		// Keep the date an issue was first reported, so the overview can flag what is new.
-		$first_seen = self::first_seen_map( array( $post_id ) );
-		$first_seen = isset( $first_seen[ $post_id ] ) ? $first_seen[ $post_id ] : array();
+		// Duplicate titles and descriptions are decided across all pages once the scan is done,
+		// so flag_duplicates() owns those rows and this method leaves them alone.
+		$placeholders = implode( ', ', array_fill( 0, count( self::CROSS_PAGE_TYPES ), '%s' ) );
+		$scope        = array_merge( array( $post_id ), self::CROSS_PAGE_TYPES );
+		$since        = self::scan_started_at();
 
-		// Duplicate issues are decided across all pages once the scan is done, so they stay put
-		// here; deleting and recreating them every scan would reset the date they were first seen.
-		self::delete_post_issues( $post_id, self::CROSS_PAGE_TYPES );
+		// Fixes belong to one scan. Everything this page had repaired before the current scan
+		// began has been reported, so it goes; fixes made since then add up, which is what
+		// makes correcting several fields on one page from the overview readable.
+		if ( '' !== $since ) {
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$table} WHERE post_id = %d AND resolved_at < %s AND issue_type NOT IN (%s, %s)",
+					$post_id,
+					$since,
+					self::CROSS_PAGE_TYPES[0],
+					self::CROSS_PAGE_TYPES[1]
+				)
+			);
+		}
 
-		$counts = array();
-		foreach ( $issues as $issue ) {
+		$open = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, issue_type, object_id, details FROM {$table} WHERE post_id = %d AND resolved_at IS NULL AND issue_type NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the type list above.
+				$scope
+			)
+		);
+
+		$matches = self::match_issues( $open, $issues );
+		$counts  = array();
+
+		foreach ( $issues as $index => $issue ) {
 			$type     = $issue['type'];
 			$severity = SEOHC_Issue_Types::severity( $type );
 
-			$wpdb->insert(
-				self::issues_table(),
-				array(
-					'post_id'    => $post_id,
-					'issue_type' => $type,
-					'severity'   => $severity,
-					'object_id'  => isset( $issue['object_id'] ) ? (int) $issue['object_id'] : 0,
-					'details'    => $issue['details'],
-					'created_at' => $now,
-					'first_seen' => isset( $first_seen[ $type ] ) ? $first_seen[ $type ] : $now,
-				),
-				array( '%d', '%s', '%s', '%d', '%s', '%s', '%s' )
-			);
+			if ( isset( $matches[ $index ] ) ) {
+				// The same problem as in the previous scan: keep the row and the date it was
+				// first seen, and only refresh the wording and the scan date.
+				$wpdb->update(
+					$table,
+					array(
+						'severity'   => $severity,
+						'details'    => $issue['details'],
+						'created_at' => $now,
+					),
+					array( 'id' => $matches[ $index ] ),
+					array( '%s', '%s', '%s' ),
+					array( '%d' )
+				);
+			} else {
+				$wpdb->insert(
+					$table,
+					array(
+						'post_id'    => $post_id,
+						'issue_type' => $type,
+						'severity'   => $severity,
+						'object_id'  => isset( $issue['object_id'] ) ? (int) $issue['object_id'] : 0,
+						'details'    => $issue['details'],
+						'created_at' => $now,
+						'first_seen' => $now,
+					),
+					array( '%d', '%s', '%s', '%d', '%s', '%s', '%s' )
+				);
+			}
 
 			if ( ! isset( $counts[ $type ] ) ) {
 				$counts[ $type ] = array(
@@ -139,21 +185,15 @@ class SEOHC_Repository {
 			++$counts[ $type ]['count'];
 		}
 
-		$wpdb->insert(
-			self::pages_table(),
-			array(
-				'post_id'          => $post_id,
-				'seo_title'        => $page['seo_title'],
-				'meta_description' => $page['meta_description'],
-				'title_hash'       => self::hash( $page['seo_title'] ),
-				'description_hash' => self::hash( $page['meta_description'] ),
-				'word_count'       => $page['word_count'],
-				'issue_count'      => count( $issues ),
-				'score'            => self::score_from_counts( $counts ),
-				'scanned_at'       => $now,
-			),
-			array( '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s' )
-		);
+		$gone = array();
+		foreach ( $open as $row ) {
+			if ( ! in_array( (int) $row->id, $matches, true ) ) {
+				$gone[] = (int) $row->id;
+			}
+		}
+
+		self::resolve_issues( $gone, $now );
+		self::save_page_row( $post_id, $page, count( $issues ), self::score_from_counts( $counts ), $now );
 	}
 
 	/**
@@ -164,34 +204,6 @@ class SEOHC_Repository {
 	public static function delete_post( $post_id ) {
 		global $wpdb;
 		$wpdb->delete( self::issues_table(), array( 'post_id' => $post_id ), array( '%d' ) );
-		$wpdb->delete( self::pages_table(), array( 'post_id' => $post_id ), array( '%d' ) );
-	}
-
-	/**
-	 * Removes a post's issues and its page row, optionally sparing some issue types.
-	 *
-	 * @param int      $post_id Post ID.
-	 * @param string[] $keep    Issue types to leave in place.
-	 */
-	private static function delete_post_issues( $post_id, array $keep = array() ) {
-		global $wpdb;
-
-		$issues = self::issues_table();
-		$params = array_merge( array( $post_id ), $keep );
-
-		if ( empty( $keep ) ) {
-			$wpdb->delete( $issues, array( 'post_id' => $post_id ), array( '%d' ) );
-		} else {
-			$placeholders = implode( ', ', array_fill( 0, count( $keep ), '%s' ) );
-
-			$wpdb->query(
-				$wpdb->prepare(
-					"DELETE FROM {$issues} WHERE post_id = %d AND issue_type NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the type list above.
-					$params
-				)
-			);
-		}
-
 		$wpdb->delete( self::pages_table(), array( 'post_id' => $post_id ), array( '%d' ) );
 	}
 
@@ -217,28 +229,41 @@ class SEOHC_Repository {
 		global $wpdb;
 		$issues = self::issues_table();
 		$pages  = self::pages_table();
+		$now    = current_time( 'mysql', true );
 		$types  = array(
 			'title_duplicate'       => 'title_hash',
 			'description_duplicate' => 'description_hash',
 		);
 
-		// Duplicates are recalculated from scratch every time, so remember when each was first reported.
-		$previous = array();
-		$rows     = $wpdb->get_results(
+		// A fix belongs to one scan, so duplicates repaired before this scan started are dropped.
+		$since = self::scan_started_at();
+		if ( '' !== $since ) {
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$issues} WHERE resolved_at < %s AND issue_type IN (%s, %s)",
+					$since,
+					self::CROSS_PAGE_TYPES[0],
+					self::CROSS_PAGE_TYPES[1]
+				)
+			);
+		}
+
+		// Duplicates are recalculated from scratch every time, so remember which rows are
+		// already open: those keep their id and the date they were first reported.
+		$open = array();
+		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT post_id, issue_type, MIN(first_seen) AS first_seen FROM {$issues} WHERE issue_type IN (%s, %s) GROUP BY post_id, issue_type",
+				"SELECT id, post_id, issue_type FROM {$issues} WHERE resolved_at IS NULL AND issue_type IN (%s, %s)",
 				self::CROSS_PAGE_TYPES[0],
 				self::CROSS_PAGE_TYPES[1]
 			)
 		);
 		foreach ( $rows as $row ) {
-			$previous[ (int) $row->post_id ][ $row->issue_type ] = $row->first_seen;
+			$open[ $row->issue_type ][ (int) $row->post_id ] = (int) $row->id;
 		}
 
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$issues} WHERE issue_type IN (%s, %s)", self::CROSS_PAGE_TYPES[0], self::CROSS_PAGE_TYPES[1] ) );
-
-		$now      = current_time( 'mysql', true );
 		$affected = array();
+		$kept     = array();
 
 		foreach ( $types as $type => $column ) {
 			$duplicates = $wpdb->get_results(
@@ -252,6 +277,24 @@ class SEOHC_Repository {
 			foreach ( $duplicates as $row ) {
 				$post_id    = (int) $row->post_id;
 				$affected[] = $post_id;
+				/* translators: %d: number of pages sharing the value. */
+				$details = sprintf( __( 'Shared by %d pages.', 'seo-health-check' ), (int) $row->total );
+
+				if ( isset( $open[ $type ][ $post_id ] ) ) {
+					$kept[] = $open[ $type ][ $post_id ];
+
+					$wpdb->update(
+						$issues,
+						array(
+							'details'    => $details,
+							'created_at' => $now,
+						),
+						array( 'id' => $open[ $type ][ $post_id ] ),
+						array( '%s', '%s' ),
+						array( '%d' )
+					);
+					continue;
+				}
 
 				$wpdb->insert(
 					$issues,
@@ -259,20 +302,30 @@ class SEOHC_Repository {
 						'post_id'    => $post_id,
 						'issue_type' => $type,
 						'severity'   => SEOHC_Issue_Types::severity( $type ),
-						/* translators: %d: number of pages sharing the value. */
-						'details'    => sprintf( __( 'Shared by %d pages.', 'seo-health-check' ), (int) $row->total ),
+						'details'    => $details,
 						'created_at' => $now,
-						'first_seen' => isset( $previous[ $post_id ][ $type ] ) ? $previous[ $post_id ][ $type ] : $now,
+						'first_seen' => $now,
 					),
 					array( '%d', '%s', '%s', '%s', '%s', '%s' )
 				);
 			}
 		}
 
-		// Pages that had a duplicate before but not now also need their totals refreshed.
-		$affected = array_unique( array_merge( $affected, array_keys( $previous ) ) );
+		// Pages that had a duplicate before but not now are fixed, and their totals change too.
+		$gone = array();
+		foreach ( $open as $ids ) {
+			foreach ( $ids as $post_id => $id ) {
+				$affected[] = (int) $post_id;
 
-		$wpdb->query( "UPDATE {$pages} SET issue_count = (SELECT COUNT(*) FROM {$issues} WHERE {$issues}.post_id = {$pages}.post_id)" );
+				if ( ! in_array( $id, $kept, true ) ) {
+					$gone[] = $id;
+				}
+			}
+		}
+
+		self::resolve_issues( $gone, $now );
+
+		$wpdb->query( "UPDATE {$pages} SET issue_count = (SELECT COUNT(*) FROM {$issues} WHERE {$issues}.post_id = {$pages}.post_id AND {$issues}.resolved_at IS NULL)" );
 		self::refresh_scores( $affected );
 	}
 
@@ -297,7 +350,7 @@ class SEOHC_Repository {
 
 			$rows = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT post_id, issue_type, severity, COUNT(*) AS total FROM {$issues} WHERE post_id IN ({$placeholders}) GROUP BY post_id, issue_type, severity", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the ID list above.
+					"SELECT post_id, issue_type, severity, COUNT(*) AS total FROM {$issues} WHERE post_id IN ({$placeholders}) AND resolved_at IS NULL GROUP BY post_id, issue_type, severity", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the ID list above.
 					$chunk
 				)
 			);
@@ -357,40 +410,156 @@ class SEOHC_Repository {
 	}
 
 	/**
-	 * First-seen dates of the issues currently stored for the given posts.
+	 * Matches the issues found now against the ones already stored for a page.
 	 *
-	 * @param int[] $post_ids Post IDs.
-	 * @return array<int, array<string, string>> Post ID => issue type => GMT datetime.
+	 * Issues are grouped by type and object, so every image keeps its own row. Within a group
+	 * the rows whose details are identical are paired first and the rest in the order they were
+	 * found: a page that grew from 90 to 120 words stays the same thin-content issue, and of
+	 * three broken links the one that was repaired is the one that ends up resolved.
+	 *
+	 * @param object[] $open   Rows currently open for the page.
+	 * @param array[]  $issues Issues found by the scanner.
+	 * @return array<int, int> Index in $issues => id of the row it continues.
 	 */
-	private static function first_seen_map( array $post_ids ) {
+	private static function match_issues( array $open, array $issues ) {
+		$groups = array();
+		foreach ( $open as $row ) {
+			$groups[ $row->issue_type . '|' . (int) $row->object_id ][] = $row;
+		}
+
+		$matches = array();
+		$changed = array();
+
+		// Identical rows first, so the ones whose text really changed are left for the pass below.
+		foreach ( $issues as $index => $issue ) {
+			$key = $issue['type'] . '|' . ( isset( $issue['object_id'] ) ? (int) $issue['object_id'] : 0 );
+
+			if ( empty( $groups[ $key ] ) ) {
+				continue;
+			}
+
+			$found = false;
+			foreach ( $groups[ $key ] as $position => $row ) {
+				if ( $row->details === $issue['details'] ) {
+					$matches[ $index ] = (int) $row->id;
+					unset( $groups[ $key ][ $position ] );
+					$found = true;
+					break;
+				}
+			}
+
+			if ( ! $found ) {
+				$changed[ $index ] = $key;
+			}
+		}
+
+		foreach ( $changed as $index => $key ) {
+			if ( empty( $groups[ $key ] ) ) {
+				continue;
+			}
+
+			$row               = array_shift( $groups[ $key ] );
+			$matches[ $index ] = (int) $row->id;
+		}
+
+		return $matches;
+	}
+
+	/**
+	 * Marks issues as fixed instead of deleting them, so the overview can show what changed.
+	 *
+	 * @param int[]  $ids         Issue IDs.
+	 * @param string $resolved_at GMT datetime the issues disappeared.
+	 */
+	private static function resolve_issues( array $ids, $resolved_at ) {
 		global $wpdb;
 
-		$post_ids = array_map( 'intval', $post_ids );
-		if ( empty( $post_ids ) ) {
-			return array();
+		$ids = array_values( array_unique( array_map( 'intval', $ids ) ) );
+		if ( empty( $ids ) ) {
+			return;
 		}
 
-		$issues       = self::issues_table();
-		$placeholders = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
+		$table = self::issues_table();
 
-		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT post_id, issue_type, MIN(first_seen) AS first_seen FROM {$issues} WHERE post_id IN ({$placeholders}) GROUP BY post_id, issue_type", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the ID list above.
-				$post_ids
-			)
+		foreach ( array_chunk( $ids, 200 ) as $chunk ) {
+			$placeholders = implode( ', ', array_fill( 0, count( $chunk ), '%d' ) );
+
+			$wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$table} SET resolved_at = %s WHERE id IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the ID list above.
+					array_merge( array( $resolved_at ), $chunk )
+				)
+			);
+		}
+	}
+
+	/**
+	 * Writes the page row, keeping the score the page had when the current scan started.
+	 *
+	 * @param int    $post_id     Post ID.
+	 * @param array  $page        Page summary: seo_title, meta_description, word_count.
+	 * @param int    $issue_count Number of issues found.
+	 * @param int    $score       Score from 0 to 100.
+	 * @param string $now         GMT datetime of the scan.
+	 */
+	private static function save_page_row( $post_id, array $page, $issue_count, $score, $now ) {
+		global $wpdb;
+
+		$pages    = self::pages_table();
+		$previous = $wpdb->get_var( $wpdb->prepare( "SELECT previous_score FROM {$pages} WHERE post_id = %d", $post_id ) );
+
+		$wpdb->delete( $pages, array( 'post_id' => $post_id ), array( '%d' ) );
+
+		$wpdb->insert(
+			$pages,
+			array(
+				'post_id'          => $post_id,
+				'seo_title'        => $page['seo_title'],
+				'meta_description' => $page['meta_description'],
+				'title_hash'       => self::hash( $page['seo_title'] ),
+				'description_hash' => self::hash( $page['meta_description'] ),
+				'word_count'       => $page['word_count'],
+				'issue_count'      => $issue_count,
+				'score'            => $score,
+				'previous_score'   => null === $previous ? null : (int) $previous,
+				'scanned_at'       => $now,
+			),
+			array( '%d', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%d', '%s' )
 		);
+	}
 
-		$map = array();
-		foreach ( $rows as $row ) {
-			$map[ (int) $row->post_id ][ $row->issue_type ] = $row->first_seen;
-		}
-		return $map;
+	/**
+	 * GMT datetime the most recent full scan started.
+	 *
+	 * Issues first seen after it are new, issues resolved after it were fixed by this scan.
+	 * Single rescans do not move this date, so fixing one field at a time keeps adding to the
+	 * same list instead of replacing it.
+	 *
+	 * @return string Empty when the site has never been scanned.
+	 */
+	public static function scan_started_at() {
+		$state = SEOHC_Scan_Queue::get_state();
+		return isset( $state['started_at'] ) ? (string) $state['started_at'] : '';
+	}
+
+	/**
+	 * Copies the score of every page to previous_score.
+	 *
+	 * Called when a full scan starts, so the page overview can show what that scan changed.
+	 * Rescans of a single page leave it alone: those would compare a page with itself a
+	 * moment earlier, while the totals on the dashboard still point at the last full scan.
+	 */
+	public static function snapshot_scores() {
+		global $wpdb;
+		$pages = self::pages_table();
+
+		$wpdb->query( "UPDATE {$pages} SET previous_score = score" );
 	}
 
 	/**
 	 * Builds the WHERE clause for the issues overview filters.
 	 *
-	 * @param array $args Filters: issue_type, post_type, severity, search, new_since.
+	 * @param array $args Filters: issue_type, post_type, severity, search, status, new_since.
 	 * @return string Prepared SQL fragment starting with WHERE.
 	 */
 	private static function where( array $args ) {
@@ -409,8 +578,21 @@ class SEOHC_Repository {
 		if ( ! empty( $args['search'] ) ) {
 			$clauses[] = $wpdb->prepare( 'p.post_title LIKE %s', '%' . $wpdb->esc_like( $args['search'] ) . '%' );
 		}
-		if ( ! empty( $args['new_since'] ) ) {
-			$clauses[] = $wpdb->prepare( 'i.first_seen >= %s', $args['new_since'] );
+
+		$status    = isset( $args['status'] ) ? $args['status'] : '';
+		$new_since = isset( $args['new_since'] ) ? $args['new_since'] : '';
+
+		if ( 'resolved' === $status ) {
+			$clauses[] = 'i.resolved_at IS NOT NULL';
+		} else {
+			// Everything else counts the problems a page still has; fixed ones are asked for.
+			$clauses[] = 'i.resolved_at IS NULL';
+
+			if ( '' !== $new_since && 'new' === $status ) {
+				$clauses[] = $wpdb->prepare( 'i.first_seen >= %s', $new_since );
+			} elseif ( '' !== $new_since && 'unchanged' === $status ) {
+				$clauses[] = $wpdb->prepare( 'i.first_seen < %s', $new_since );
+			}
 		}
 
 		return 'WHERE ' . implode( ' AND ', $clauses );
@@ -473,13 +655,21 @@ class SEOHC_Repository {
 	/**
 	 * Issue totals per type.
 	 *
+	 * @param array $args Optional status and new_since, so the tabs count what the status
+	 *                    filter shows. Without them only the open issues are counted.
 	 * @return array<string, int>
 	 */
-	public static function counts_by_type() {
+	public static function counts_by_type( array $args = array() ) {
 		global $wpdb;
 		$issues = self::issues_table();
+		$where  = self::where(
+			array(
+				'status'    => isset( $args['status'] ) ? $args['status'] : '',
+				'new_since' => isset( $args['new_since'] ) ? $args['new_since'] : '',
+			)
+		);
 
-		$rows = $wpdb->get_results( "SELECT i.issue_type, COUNT(*) AS total FROM {$issues} i INNER JOIN {$wpdb->posts} p ON p.ID = i.post_id GROUP BY i.issue_type" );
+		$rows = $wpdb->get_results( "SELECT i.issue_type, COUNT(*) AS total FROM {$issues} i INNER JOIN {$wpdb->posts} p ON p.ID = i.post_id {$where} GROUP BY i.issue_type" );
 
 		$counts = array();
 		foreach ( $rows as $row ) {
@@ -651,6 +841,7 @@ class SEOHC_Repository {
 		$history   = self::run_history();
 		$history[] = array_merge(
 			self::summary(),
+			self::change_counts( $started_at ),
 			array(
 				'started_at'  => $started_at,
 				'finished_at' => $finished_at,
@@ -659,6 +850,41 @@ class SEOHC_Repository {
 		);
 
 		update_option( self::HISTORY_KEY, array_slice( $history, -self::HISTORY_LIMIT ), false );
+	}
+
+	/**
+	 * How many issues this scan added and how many it found fixed.
+	 *
+	 * @param string $since GMT datetime the scan started.
+	 * @return array{new: int, resolved: int}
+	 */
+	public static function change_counts( $since ) {
+		global $wpdb;
+
+		$since = (string) $since;
+		if ( '' === $since ) {
+			return array(
+				'new'      => 0,
+				'resolved' => 0,
+			);
+		}
+
+		$issues = self::issues_table();
+
+		return array(
+			'new'      => (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$issues} i INNER JOIN {$wpdb->posts} p ON p.ID = i.post_id WHERE i.resolved_at IS NULL AND i.first_seen >= %s",
+					$since
+				)
+			),
+			'resolved' => (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$issues} i INNER JOIN {$wpdb->posts} p ON p.ID = i.post_id WHERE i.resolved_at >= %s",
+					$since
+				)
+			),
+		);
 	}
 
 	/**

@@ -15,10 +15,10 @@ class SEOHC_CSV_Exporter {
 	/**
 	 * Sends the CSV file and exits.
 	 *
-	 * @param array $filters Filters: issue_type, post_type, severity, search.
+	 * @param array $filters Filters: issue_type, post_type, severity, search, status.
 	 */
 	public static function send( array $filters ) {
-		$rows     = SEOHC_Repository::get_issues(
+		$rows      = SEOHC_Repository::get_issues(
 			array_merge(
 				$filters,
 				array(
@@ -28,7 +28,8 @@ class SEOHC_CSV_Exporter {
 				)
 			)
 		);
-		$filename = 'seo-health-check-' . gmdate( 'Y-m-d' ) . '.csv';
+		$filename  = 'seo-health-check-' . gmdate( 'Y-m-d' ) . '.csv';
+		$new_since = isset( $filters['new_since'] ) ? (string) $filters['new_since'] : '';
 
 		nocache_headers();
 		header( 'Content-Type: text/csv; charset=utf-8' );
@@ -50,6 +51,7 @@ class SEOHC_CSV_Exporter {
 				__( 'Issue', 'seo-health-check' ),
 				__( 'Severity', 'seo-health-check' ),
 				__( 'Details', 'seo-health-check' ),
+				__( 'Status', 'seo-health-check' ),
 				__( 'Scanned at (UTC)', 'seo-health-check' ),
 			)
 		);
@@ -68,6 +70,7 @@ class SEOHC_CSV_Exporter {
 						SEOHC_Issue_Types::label( $row->issue_type ),
 						$row->severity,
 						$row->details,
+						self::status_label( $row, $new_since ),
 						$row->created_at,
 					)
 				)
@@ -76,6 +79,25 @@ class SEOHC_CSV_Exporter {
 
 		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		exit;
+	}
+
+	/**
+	 * What the last scan did with this issue, in words, for the Status column.
+	 *
+	 * @param object $row       Issue row.
+	 * @param string $new_since GMT datetime the most recent scan started.
+	 * @return string
+	 */
+	private static function status_label( $row, $new_since ) {
+		if ( ! empty( $row->resolved_at ) ) {
+			return __( 'Fixed', 'seo-health-check' );
+		}
+
+		if ( '' !== $new_since && $row->first_seen >= $new_since ) {
+			return __( 'New', 'seo-health-check' );
+		}
+
+		return __( 'Unchanged', 'seo-health-check' );
 	}
 
 	/**

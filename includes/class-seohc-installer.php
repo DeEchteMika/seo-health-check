@@ -66,7 +66,9 @@ class SEOHC_Installer {
 		$issues_table    = SEOHC_Repository::issues_table();
 		$pages_table     = SEOHC_Repository::pages_table();
 
-		// One row per issue found. Indexed on the columns the overview filters and sorts on.
+		// One row per issue found. Rows stay behind with a resolved_at date once the problem is
+		// gone, so the overview can show what the last scan fixed. Indexed on the columns the
+		// overview filters and sorts on.
 		dbDelta(
 			"CREATE TABLE {$issues_table} (
 				id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -77,10 +79,12 @@ class SEOHC_Installer {
 				details text NOT NULL,
 				created_at datetime NOT NULL,
 				first_seen datetime NOT NULL,
+				resolved_at datetime DEFAULT NULL,
 				PRIMARY KEY  (id),
 				KEY post_id (post_id),
 				KEY issue_type (issue_type),
-				KEY first_seen (first_seen)
+				KEY first_seen (first_seen),
+				KEY resolved_at (resolved_at)
 			) {$charset_collate};"
 		);
 
@@ -95,6 +99,7 @@ class SEOHC_Installer {
 				word_count int(10) unsigned NOT NULL DEFAULT 0,
 				issue_count int(10) unsigned NOT NULL DEFAULT 0,
 				score tinyint(3) unsigned NOT NULL DEFAULT 100,
+				previous_score tinyint(3) unsigned DEFAULT NULL,
 				scanned_at datetime NOT NULL,
 				PRIMARY KEY  (post_id),
 				KEY title_hash (title_hash),

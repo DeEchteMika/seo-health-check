@@ -61,6 +61,7 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 			'details'    => __( 'Details', 'seo-health-check' ),
 			'severity'   => __( 'Severity', 'seo-health-check' ),
 			'post_type'  => __( 'Type', 'seo-health-check' ),
+			'status'     => __( 'Status', 'seo-health-check' ),
 			'first_seen' => __( 'Since', 'seo-health-check' ),
 		);
 	}
@@ -114,7 +115,7 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	protected function get_views() {
-		$counts  = SEOHC_Repository::counts_by_type();
+		$counts  = SEOHC_Repository::counts_by_type( $this->filters );
 		$base    = remove_query_arg( array( 'issue_type', 'paged' ) );
 		$current = $this->filters['issue_type'];
 
@@ -173,10 +174,13 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 				<option value="warning" <?php selected( $this->filters['severity'], 'warning' ); ?>><?php esc_html_e( 'Warnings', 'seo-health-check' ); ?></option>
 			</select>
 
-			<label class="seohc-filter-new">
-				<input type="checkbox" name="seohc_new" value="1" <?php checked( ! empty( $this->filters['only_new'] ) ); ?>>
-				<?php esc_html_e( 'Only new since the last scan', 'seo-health-check' ); ?>
-			</label>
+			<label class="screen-reader-text" for="shc-filter-status"><?php esc_html_e( 'Filter by status', 'seo-health-check' ); ?></label>
+			<select name="seohc_status" id="shc-filter-status">
+				<option value=""><?php esc_html_e( 'All open issues', 'seo-health-check' ); ?></option>
+				<option value="new" <?php selected( $this->filters['status'], 'new' ); ?>><?php esc_html_e( 'New since the last scan', 'seo-health-check' ); ?></option>
+				<option value="unchanged" <?php selected( $this->filters['status'], 'unchanged' ); ?>><?php esc_html_e( 'Unchanged', 'seo-health-check' ); ?></option>
+				<option value="resolved" <?php selected( $this->filters['status'], 'resolved' ); ?>><?php esc_html_e( 'Fixed since the last scan', 'seo-health-check' ); ?></option>
+			</select>
 
 			<?php submit_button( __( 'Filter', 'seo-health-check' ), '', 'filter_action', false ); ?>
 		</div>
@@ -261,12 +265,29 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	 * @return string
 	 */
 	protected function column_first_seen( $item ) {
-		$date = esc_html( get_date_from_gmt( $item->first_seen, get_option( 'date_format' ) ) );
+		return esc_html( get_date_from_gmt( $item->first_seen, get_option( 'date_format' ) ) );
+	}
+
+	/**
+	 * Status column: what the last scan did with this issue.
+	 *
+	 * @param object $item Row.
+	 * @return string
+	 */
+	protected function column_status( $item ) {
+		if ( $this->is_resolved( $item ) ) {
+			return '<span class="seohc-badge seohc-badge--resolved">' . esc_html__( 'Fixed', 'seo-health-check' ) . '</span>';
+		}
+
+		if ( '' === $this->new_since ) {
+			return '';
+		}
 
 		if ( $this->is_new( $item ) ) {
-			return '<span class="seohc-badge seohc-badge--new">' . esc_html__( 'New', 'seo-health-check' ) . '</span><br>' . $date;
+			return '<span class="seohc-badge seohc-badge--new">' . esc_html__( 'New', 'seo-health-check' ) . '</span>';
 		}
-		return $date;
+
+		return '<span class="seohc-badge seohc-badge--same">' . esc_html__( 'Unchanged', 'seo-health-check' ) . '</span>';
 	}
 
 	/**
@@ -276,7 +297,17 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	 * @return bool
 	 */
 	private function is_new( $item ) {
-		return '' !== $this->new_since && $item->first_seen >= $this->new_since;
+		return ! $this->is_resolved( $item ) && '' !== $this->new_since && $item->first_seen >= $this->new_since;
+	}
+
+	/**
+	 * Whether the issue was solved and is only kept to show what the last scan changed.
+	 *
+	 * @param object $item Row.
+	 * @return bool
+	 */
+	private function is_resolved( $item ) {
+		return ! empty( $item->resolved_at );
 	}
 
 	/**
@@ -297,7 +328,7 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	 */
 	protected function column_details( $item ) {
 		$html   = '<span class="seohc-details">' . esc_html( $item->details ) . '</span>';
-		$editor = SEOHC_Inline_Edit::editor_for( $item );
+		$editor = $this->is_resolved( $item ) ? null : SEOHC_Inline_Edit::editor_for( $item );
 
 		if ( ! $editor ) {
 			return $html;
@@ -333,12 +364,19 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Adds a class to rows whose issue is new, so they can be highlighted.
+	 * Marks new and solved rows, so they can be highlighted.
 	 *
 	 * @param object $item Row.
 	 */
 	public function single_row( $item ) {
-		$classes = $this->is_new( $item ) ? ' class="seohc-row--new"' : '';
+		$classes = '';
+
+		if ( $this->is_resolved( $item ) ) {
+			$classes = ' class="seohc-row--fixed"';
+		} elseif ( $this->is_new( $item ) ) {
+			$classes = ' class="seohc-row--new"';
+		}
+
 		echo '<tr' . $classes . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed markup.
 		$this->single_row_columns( $item );
 		echo '</tr>';
@@ -361,6 +399,10 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	public function no_items() {
 		if ( 0 === SEOHC_Repository::summary()['pages'] ) {
 			esc_html_e( 'No scan results yet. Start a scan to check your site.', 'seo-health-check' );
+			return;
+		}
+		if ( 'resolved' === $this->filters['status'] ) {
+			esc_html_e( 'The last scan did not solve anything yet. Fix an issue and the next scan will list it here.', 'seo-health-check' );
 			return;
 		}
 		esc_html_e( 'No issues found for these filters.', 'seo-health-check' );

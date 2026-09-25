@@ -47,6 +47,7 @@ class SEOHC_Pages_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
 			'score'       => __( 'Score', 'seo-health-check' ),
+			'change'      => __( 'Change', 'seo-health-check' ),
 			'post_title'  => __( 'Page', 'seo-health-check' ),
 			'issue_count' => __( 'Issues', 'seo-health-check' ),
 			'word_count'  => __( 'Words', 'seo-health-check' ),
@@ -63,6 +64,7 @@ class SEOHC_Pages_List_Table extends WP_List_Table {
 	protected function get_sortable_columns() {
 		return array(
 			'score'       => array( 'score', false ),
+			'change'      => array( 'change', false ),
 			'post_title'  => array( 'post_title', false ),
 			'issue_count' => array( 'issue_count', true ),
 			'word_count'  => array( 'word_count', true ),
@@ -166,6 +168,22 @@ class SEOHC_Pages_List_Table extends WP_List_Table {
 	 */
 	protected function column_score( $item ) {
 		return SEOHC_Admin::score_badge( (int) $item->score );
+	}
+
+	/**
+	 * Change column: what the last full scan did to this page's score.
+	 *
+	 * @param object $item Row.
+	 * @return string
+	 */
+	protected function column_change( $item ) {
+		if ( null === $item->previous_score ) {
+			return '<span class="seohc-delta seohc-delta--same" aria-label="'
+				. esc_attr__( 'No earlier scan to compare this page with yet.', 'seo-health-check' )
+				. '">&mdash;</span>';
+		}
+
+		return SEOHC_Admin::delta_badge( (int) $item->score, (int) $item->previous_score, false );
 	}
 
 	/**

@@ -44,6 +44,7 @@ class SEOHC_Plugin {
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-issues-list-table.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-pages-list-table.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-inline-edit.php';
+			require_once SEOHC_DIR . 'includes/admin/class-seohc-scans-page.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-admin.php';
 			SEOHC_Admin::init();
 		}

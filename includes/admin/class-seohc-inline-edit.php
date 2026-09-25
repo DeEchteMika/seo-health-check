@@ -352,7 +352,7 @@ class SEOHC_Inline_Edit {
 		$table = SEOHC_Repository::issues_table();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the plugin's own table.
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND issue_type = %s", $post_id, $issue_type ) );
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE post_id = %d AND issue_type = %s AND resolved_at IS NULL", $post_id, $issue_type ) );
 	}
 
 	/**

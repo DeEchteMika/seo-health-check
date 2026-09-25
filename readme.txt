@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +31,11 @@ Every scanned page gets a score from 0 to 100 on its own screen, worst first, so
 
 **See what changed**
 
-Every finished scan is compared with the one before it. The overview shows whether the number of issues went up or down, and issues that appeared in the latest scan are marked "New" so you can filter on them.
+Every issue in the overview says what the last scan did with it: **New** when that scan was the first to report it, **Unchanged** when it was already there, and **Fixed** when the scan found it gone. Solved issues stay in the list until the next scan instead of quietly disappearing, so you can see what your work actually did, and a status filter narrows the list to one of the three.
+
+**The scan history**
+
+A separate **Scans** screen keeps the last twenty finished scans: when each one ran and how long it took, the average score, the number of issues, how many appeared and how many were solved. Below it, the last scan is compared with the one before it per kind of problem, so you can see whether the alt texts are really getting better or only the titles. The page scores overview has a column showing what the last full scan changed for each page.
 
 **Fix things without leaving the overview**
 
@@ -52,7 +56,7 @@ Page builders such as Oxygen, Breakdance and Elementor store their layout outsid
 **Other features**
 
 * Sortable, filterable and searchable overview built on the standard WordPress list table.
-* Filter by issue type, post type and severity, or show only what is new.
+* Filter by issue type, post type and severity, or by status: new, unchanged or solved.
 * Export the (filtered) results as CSV, ready for Excel.
 * Posts are rescanned automatically in the background when you save them.
 * Removes all of its data when you delete the plugin.
@@ -135,6 +139,13 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.3.0 =
+* New: every issue is marked New, Unchanged or Fixed, with a status filter in the overview.
+* New: solved issues stay visible until the next scan instead of disappearing without a trace.
+* New: a Scans screen with the last twenty scans, what each one changed, and a comparison per issue type.
+* New: the page scores overview shows the change per page since the last full scan.
+* The CSV export has a Status column. The database is upgraded automatically; existing results keep working.
 
 = 0.2.0 =
 * New: a score from 0 to 100 per page, on its own screen and in the issues list.
