@@ -6,3 +6,7 @@ composer.lock
 Thumbs.db
 desktop.ini
 /.impeccable/
+
+# Internal PDK documents: this repository is public.
+*.xlsx
+*.xls

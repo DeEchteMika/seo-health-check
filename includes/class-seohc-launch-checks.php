@@ -99,6 +99,7 @@ class SEOHC_Launch_Checks {
 			array( 'before', 'footer_credit', __( 'Footer credit', 'seo-health-check' ) ),
 			array( 'before', 'required_plugins', __( 'Standard plugins installed', 'seo-health-check' ) ),
 			array( 'before', 'updates', __( 'WordPress, plugins and themes up to date', 'seo-health-check' ) ),
+			array( 'before', 'menu_unpublished', __( 'Menus point at published pages', 'seo-health-check' ) ),
 			array( 'launch', 'https', __( 'HTTPS', 'seo-health-check' ) ),
 			array( 'launch', 'dev_links', __( 'No links to the development site', 'seo-health-check' ) ),
 			array( 'launch', 'analytics', __( 'Google Analytics / Tag Manager', 'seo-health-check' ) ),
@@ -107,6 +108,9 @@ class SEOHC_Launch_Checks {
 			array( 'after', 'sitemap', __( 'XML sitemap', 'seo-health-check' ) ),
 			array( 'after', 'redirects', __( 'WWW / non-WWW and HTTP / HTTPS redirects', 'seo-health-check' ) ),
 			array( 'after', 'inactive_plugins', __( 'No inactive plugins', 'seo-health-check' ) ),
+			array( 'after', 'search_console', __( 'Search Console verification', 'seo-health-check' ) ),
+			array( 'after', 'mail_records', __( 'SPF and DMARC', 'seo-health-check' ) ),
+			array( 'after', 'default_admin', __( 'Default "admin" login', 'seo-health-check' ) ),
 		);
 
 		$results = array();
@@ -562,6 +566,190 @@ class SEOHC_Launch_Checks {
 			return array( self::WARNING, sprintf( __( 'Inactive plugins: %s. Remove the ones you do not need.', 'seo-health-check' ), implode( ', ', $inactive ) ) );
 		}
 		return array( self::PASS, __( 'There are no inactive plugins.', 'seo-health-check' ) );
+	}
+
+	/**
+	 * Menu items that point at something unpublished, and pages still waiting for content.
+	 *
+	 * Covers two lines of the checklist at once: pages that will be filled in later belong on
+	 * private and out of the menu, and after launch someone has to remember they are there.
+	 *
+	 * @return array
+	 */
+	private static function check_menu_unpublished() {
+		$broken = array();
+
+		foreach ( (array) wp_get_nav_menus() as $menu ) {
+			foreach ( (array) wp_get_nav_menu_items( $menu->term_id ) as $item ) {
+				if ( 'post_type' !== $item->type ) {
+					continue;
+				}
+
+				$status = get_post_status( $item->object_id );
+				if ( ! $status || 'publish' === $status ) {
+					continue;
+				}
+
+				$object   = get_post_status_object( $status );
+				$broken[] = sprintf(
+					/* translators: 1: page title, 2: menu name, 3: status such as draft or private. */
+					__( '%1$s (in "%2$s", %3$s)', 'seo-health-check' ),
+					$item->title,
+					$menu->name,
+					$object ? $object->label : $status
+				);
+			}
+		}
+
+		if ( $broken ) {
+			return array(
+				self::FAIL,
+				sprintf(
+					/* translators: %s: list of menu items. */
+					__( 'These menu items do not lead to a published page, so visitors end up on an error page: %s.', 'seo-health-check' ),
+					implode( '; ', $broken )
+				),
+			);
+		}
+
+		$waiting = get_posts(
+			array(
+				'post_type'      => (array) SEOHC_Settings::get( 'post_types' ),
+				'post_status'    => array( 'private', 'draft', 'pending' ),
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			)
+		);
+
+		if ( $waiting ) {
+			return array(
+				self::INFO,
+				sprintf(
+					/* translators: %d: number of pages. */
+					_n(
+						'%d page is not published yet and is correctly kept out of the menus. Remember that it still needs its text.',
+						'%d pages are not published yet and are correctly kept out of the menus. Remember that they still need their text.',
+						count( $waiting ),
+						'seo-health-check'
+					),
+					count( $waiting )
+				),
+			);
+		}
+
+		return array( self::PASS, __( 'Every menu item leads to a published page.', 'seo-health-check' ) );
+	}
+
+	/**
+	 * The Google Search Console verification tag.
+	 *
+	 * Only the meta tag can be seen from here. Verifying through DNS or an uploaded HTML file
+	 * works just as well and leaves no trace on the page, so a missing tag is not a failure.
+	 *
+	 * @return array
+	 */
+	private static function check_search_console() {
+		$html = self::homepage_html();
+		if ( is_wp_error( $html ) ) {
+			return array( self::WARNING, $html->get_error_message() );
+		}
+
+		if ( preg_match( '#<meta[^>]+name=[\'"]google-site-verification[\'"]#i', $html ) ) {
+			return array( self::PASS, __( 'The verification tag for Google Search Console is on the homepage. Check in Search Console itself that the site is really added.', 'seo-health-check' ) );
+		}
+
+		return array( self::INFO, __( 'No verification tag for Google Search Console found. If you verified the site through DNS or an HTML file, this check cannot see that.', 'seo-health-check' ) );
+	}
+
+	/**
+	 * SPF and DMARC records in DNS.
+	 *
+	 * Without them, mail from this domain lands in the spam folder, which includes the report
+	 * this plugin sends after a scheduled scan. DKIM needs the selector the mail server uses,
+	 * which cannot be worked out from here, so that one stays a manual check.
+	 *
+	 * @return array
+	 */
+	private static function check_mail_records() {
+		if ( ! function_exists( 'dns_get_record' ) ) {
+			return array( self::INFO, __( 'This server does not allow DNS lookups, so the mail records cannot be checked from here.', 'seo-health-check' ) );
+		}
+
+		$host = preg_replace( '/^www\./i', '', (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+		if ( '' === $host ) {
+			return array( self::WARNING, __( 'The domain of the site could not be determined.', 'seo-health-check' ) );
+		}
+
+		$spf   = self::has_txt_record( $host, 'v=spf1' );
+		$dmarc = self::has_txt_record( '_dmarc.' . $host, 'v=DMARC1' );
+
+		if ( $spf && $dmarc ) {
+			return array(
+				self::PASS,
+				sprintf(
+					/* translators: %s: domain name. */
+					__( 'SPF and DMARC are set for %s. DKIM can only be checked by hand, because it needs the selector of the mail server.', 'seo-health-check' ),
+					$host
+				),
+			);
+		}
+
+		$missing = array();
+		if ( ! $spf ) {
+			$missing[] = 'SPF';
+		}
+		if ( ! $dmarc ) {
+			$missing[] = 'DMARC';
+		}
+
+		return array(
+			self::WARNING,
+			sprintf(
+				/* translators: 1: missing record names, 2: domain name. */
+				__( 'No %1$s record found for %2$s. Mail from this domain, including the scan report, is likely to end up in the spam folder.', 'seo-health-check' ),
+				implode( ' and no ', $missing ),
+				$host
+			),
+		);
+	}
+
+	/**
+	 * Whether a hostname has a TXT record starting with the given marker.
+	 *
+	 * @param string $host   Hostname to look up.
+	 * @param string $marker Start of the record, for example v=spf1.
+	 * @return bool
+	 */
+	private static function has_txt_record( $host, $marker ) {
+		// A lookup for a name that does not exist raises a warning; the empty result is the answer.
+		$records = @dns_get_record( $host, DNS_TXT ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a missing record is a normal outcome here, not an error to report.
+
+		foreach ( (array) $records as $record ) {
+			if ( isset( $record['txt'] ) && 0 === stripos( (string) $record['txt'], $marker ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * The default "admin" login.
+	 *
+	 * @return array
+	 */
+	private static function check_default_admin() {
+		$user = get_user_by( 'login', 'admin' );
+
+		if ( ! $user ) {
+			return array( self::PASS, __( 'There is no user called "admin".', 'seo-health-check' ) );
+		}
+
+		if ( user_can( $user, 'manage_options' ) ) {
+			return array( self::FAIL, __( 'An administrator called "admin" still exists. That is the first name login bots try. Make a new administrator under a different name, hand the content over to it and remove this one.', 'seo-health-check' ) );
+		}
+
+		return array( self::WARNING, __( 'A user called "admin" still exists, without administrator rights. Bots try that name anyway, so give it another one.', 'seo-health-check' ) );
 	}
 
 	/*

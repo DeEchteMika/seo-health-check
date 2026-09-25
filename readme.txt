@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.5.2
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,7 +56,7 @@ A widget on the wp-admin home screen shows the average score, the number of issu
 
 **Launch checks**
 
-A separate page checks site-wide settings from a typical go-live checklist: search engine visibility, HTTPS, permalinks, favicon, a real 404 status, XML sitemap, WWW / HTTPS redirects, pending updates, inactive plugins, cookie consent, analytics code, links to your development domain and more.
+A separate page checks site-wide settings from a typical go-live checklist: search engine visibility, HTTPS, permalinks, favicon, a real 404 status, XML sitemap, WWW / HTTPS redirects, pending updates, inactive plugins, cookie consent, analytics code, links to your development domain, menu items that lead nowhere, the Search Console verification tag, SPF and DMARC records, the default "admin" login and more.
 
 **Built for large sites**
 
@@ -175,6 +175,12 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.6.0 =
+* New launch check: menu items that lead to a page which is not published, and a reminder about pages still waiting for their text.
+* New launch check: the Google Search Console verification tag on the homepage.
+* New launch check: SPF and DMARC records in DNS, so you know whether mail from the site stands a chance.
+* New launch check: whether the default "admin" login still exists.
 
 = 0.5.2 =
 * New: the settings screen shows which version is running, along with the database version, which SEO plugin the titles come from, and whether scans run through Action Scheduler or WP-Cron.
