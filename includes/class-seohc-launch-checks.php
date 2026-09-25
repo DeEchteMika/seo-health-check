@@ -101,6 +101,9 @@ class SEOHC_Launch_Checks {
 			array( 'before', 'updates', __( 'WordPress, plugins and themes up to date', 'seo-health-check' ) ),
 			array( 'before', 'menu_unpublished', __( 'Menus point at published pages', 'seo-health-check' ) ),
 			array( 'before', 'mail_delivery', __( 'Mail delivery set up', 'seo-health-check' ) ),
+			array( 'before', 'form_recipients', __( 'Forms mail to the client', 'seo-health-check' ) ),
+			array( 'before', 'form_confirmations', __( 'Thank you pages for forms', 'seo-health-check' ) ),
+			array( 'before', 'form_spam', __( 'Spam protection on forms', 'seo-health-check' ) ),
 			array( 'launch', 'https', __( 'HTTPS', 'seo-health-check' ) ),
 			array( 'launch', 'dev_links', __( 'No links to the development site', 'seo-health-check' ) ),
 			array( 'launch', 'analytics', __( 'Google Analytics / Tag Manager', 'seo-health-check' ) ),
@@ -776,6 +779,243 @@ class SEOHC_Launch_Checks {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Plugins that keep spam out of forms, keyed by plugin folder.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function antispam_plugins() {
+		return apply_filters(
+			'seo_health_check_antispam_plugins',
+			array(
+				'akismet'                      => 'Akismet',
+				'antispam-bee'                 => 'Antispam Bee',
+				'cleantalk-spam-protect'       => 'CleanTalk',
+				'google-captcha'               => 'reCaptcha by BestWebSoft',
+				'advanced-nocaptcha-recaptcha' => 'Advanced noCaptcha & Invisible Captcha',
+				'simple-cloudflare-turnstile'  => 'Simple Cloudflare Turnstile',
+				'hcaptcha-for-forms-and-more'  => 'hCaptcha',
+				'wp-armour'                    => 'WP Armour Honeypot',
+				'contact-form-7-honeypot'      => 'Honeypot for Contact Form 7',
+			)
+		);
+	}
+
+	/**
+	 * The email domains of whoever built the site, from the settings.
+	 *
+	 * @return string[]
+	 */
+	private static function agency_domains() {
+		$raw = array_map( 'trim', explode( ',', (string) SEOHC_Settings::get( 'agency_domains' ) ) );
+
+		return array_values( array_filter( array_map( 'strtolower', $raw ) ) );
+	}
+
+	/**
+	 * Where a form check should stop before it starts.
+	 *
+	 * @return array|null A result when there is nothing to check, null when there is.
+	 */
+	private static function forms_or_reason() {
+		if ( ! SEOHC_Forms::has_plugin() ) {
+			return array( self::INFO, __( 'No Contact Form 7, WPForms or Gravity Forms found, so there is nothing to check here.', 'seo-health-check' ) );
+		}
+
+		if ( ! SEOHC_Forms::all() ) {
+			return array( self::WARNING, __( 'A form plugin is active but no forms were made yet.', 'seo-health-check' ) );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Whether the forms still mail to us instead of to the client.
+	 *
+	 * @return array
+	 */
+	private static function check_form_recipients() {
+		$stop = self::forms_or_reason();
+		if ( $stop ) {
+			return $stop;
+		}
+
+		$forms    = SEOHC_Forms::all();
+		$agency   = self::agency_domains();
+		$problems = array();
+
+		foreach ( $forms as $form ) {
+			$title = '' !== trim( $form['title'] ) ? $form['title'] : '#' . $form['id'];
+
+			if ( empty( $form['recipients'] ) ) {
+				/* translators: %s: form name. */
+				$problems[] = sprintf( __( '%s has no recipient at all', 'seo-health-check' ), $title );
+				continue;
+			}
+
+			foreach ( $form['recipients'] as $recipient ) {
+				if ( SEOHC_Forms::is_admin_placeholder( $recipient ) ) {
+					/* translators: %s: form name. */
+					$problems[] = sprintf( __( '%s still mails to the WordPress administrator', 'seo-health-check' ), $title );
+					continue;
+				}
+
+				$domain = SEOHC_Forms::domain_of( $recipient );
+				if ( '' !== $domain && in_array( $domain, $agency, true ) ) {
+					$problems[] = sprintf(
+						/* translators: 1: form name, 2: email address. */
+						__( '%1$s mails to %2$s', 'seo-health-check' ),
+						$title,
+						$recipient
+					);
+				}
+			}
+		}
+
+		if ( $problems ) {
+			return array(
+				self::FAIL,
+				sprintf(
+					/* translators: %s: list of forms and what is wrong with them. */
+					__( 'Check the recipients: %s.', 'seo-health-check' ),
+					implode( '; ', array_unique( $problems ) )
+				),
+			);
+		}
+
+		$note = empty( $agency )
+			? ' ' . __( 'Fill in your own email domains under Settings to also catch forms that still mail to you.', 'seo-health-check' )
+			: '';
+
+		return array(
+			self::PASS,
+			sprintf(
+				/* translators: %d: number of forms. */
+				_n( '%d form mails to an address of its own.', '%d forms mail to an address of their own.', count( $forms ), 'seo-health-check' ),
+				count( $forms )
+			) . $note,
+		);
+	}
+
+	/**
+	 * Which forms send the visitor to a page, and which only show a message.
+	 *
+	 * The checklist says "if needed", so this reports rather than judges: a message is a fine
+	 * answer for a small form, it just cannot be measured as a conversion.
+	 *
+	 * @return array
+	 */
+	private static function check_form_confirmations() {
+		$stop = self::forms_or_reason();
+		if ( $stop ) {
+			return $stop;
+		}
+
+		$message = array();
+		$unknown = array();
+
+		foreach ( SEOHC_Forms::all() as $form ) {
+			$title = '' !== trim( $form['title'] ) ? $form['title'] : '#' . $form['id'];
+
+			if ( 'message' === $form['confirmation'] ) {
+				$message[] = $title;
+			} elseif ( 'unknown' === $form['confirmation'] ) {
+				$unknown[] = $title;
+			}
+		}
+
+		if ( ! $message && ! $unknown ) {
+			return array( self::PASS, __( 'Every form sends the visitor to a page of its own afterwards.', 'seo-health-check' ) );
+		}
+
+		$parts = array();
+		if ( $message ) {
+			$parts[] = sprintf(
+				/* translators: %s: list of form names. */
+				__( 'showing a message instead of a thank you page: %s', 'seo-health-check' ),
+				implode( ', ', $message )
+			);
+		}
+		if ( $unknown ) {
+			$parts[] = sprintf(
+				/* translators: %s: list of form names. */
+				__( 'could not be read: %s', 'seo-health-check' ),
+				implode( ', ', $unknown )
+			);
+		}
+
+		return array(
+			self::INFO,
+			sprintf(
+				/* translators: %s: what is the matter with which forms. */
+				__( 'Forms %s. A thank you page is not always needed, but without one the submission cannot be counted as a conversion.', 'seo-health-check' ),
+				implode( '; ', $parts )
+			),
+		);
+	}
+
+	/**
+	 * Whether anything is standing between the forms and the spam bots.
+	 *
+	 * @return array
+	 */
+	private static function check_form_spam() {
+		$stop = self::forms_or_reason();
+		if ( $stop ) {
+			return $stop;
+		}
+
+		$active = self::active_plugin_folders();
+		$found  = array();
+
+		foreach ( self::antispam_plugins() as $folder => $name ) {
+			if ( in_array( $folder, $active, true ) ) {
+				$found[] = $name;
+			}
+		}
+
+		$found = array_merge( $found, self::builtin_captchas() );
+
+		if ( $found ) {
+			return array(
+				self::PASS,
+				sprintf(
+					/* translators: %s: names of the plugins or settings found. */
+					__( 'Spam protection found: %s. Check that it is switched on for every form, because this check only looks site-wide.', 'seo-health-check' ),
+					implode( ', ', array_unique( $found ) )
+				),
+			);
+		}
+
+		return array( self::WARNING, __( 'No spam protection found. Without a captcha or a honeypot the spam bots will find the forms within weeks.', 'seo-health-check' ) );
+	}
+
+	/**
+	 * Captchas the form plugins bring themselves, once their keys are filled in.
+	 *
+	 * @return string[]
+	 */
+	private static function builtin_captchas() {
+		$found = array();
+
+		$cf7 = get_option( 'wpcf7', array() );
+		if ( is_array( $cf7 ) && ! empty( $cf7['recaptcha'] ) ) {
+			$found[] = __( 'reCAPTCHA in Contact Form 7', 'seo-health-check' );
+		}
+
+		$wpforms = get_option( 'wpforms_settings', array() );
+		if ( is_array( $wpforms ) ) {
+			foreach ( array( 'recaptcha-site-key', 'hcaptcha-site-key', 'turnstile-site-key' ) as $key ) {
+				if ( ! empty( $wpforms[ $key ] ) ) {
+					$found[] = __( 'Captcha in WPForms', 'seo-health-check' );
+					break;
+				}
+			}
+		}
+
+		return $found;
 	}
 
 	/**

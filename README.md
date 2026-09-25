@@ -57,6 +57,7 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/class-seohc-content-resolver.php` | Chooses post content or the rendered page (page builders) |
 | `includes/class-seohc-link-checker.php` | Checks internal links |
 | `includes/class-seohc-launch-checks.php` | Site-wide go-live checks |
+| `includes/class-seohc-forms.php` | Reads Contact Form 7, WPForms and Gravity Forms |
 | `includes/class-seohc-schedule.php` | When the next automatic scan is due |
 | `includes/class-seohc-mailer.php` | Builds, keeps and sends the report |
 | `includes/class-seohc-settings.php` | Settings API |

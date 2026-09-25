@@ -37,6 +37,7 @@ class SEOHC_Settings {
 			'dev_domains'            => '',
 			'dkim_selector'          => '',
 			'analytics_id'           => '',
+			'agency_domains'         => '',
 		);
 	}
 
@@ -205,6 +206,18 @@ class SEOHC_Settings {
 			)
 		);
 		add_settings_field(
+			'agency_domains',
+			__( 'Your own email domains', 'seo-health-check' ),
+			array( __CLASS__, 'field_text' ),
+			self::PAGE_SLUG,
+			'seohc_launch',
+			array(
+				'key'         => 'agency_domains',
+				'label_for'   => 'seohc_agency_domains',
+				'description' => __( 'Comma separated, for example "youragency.com". Forms that still mail to one of these have not been handed over to the client yet. Leave empty to skip that part of the check.', 'seo-health-check' ),
+			)
+		);
+		add_settings_field(
 			'analytics_id',
 			__( 'Measurement code', 'seo-health-check' ),
 			array( __CLASS__, 'field_text' ),
@@ -283,18 +296,13 @@ class SEOHC_Settings {
 		$clean['footer_credit'] = isset( $input['footer_credit'] ) ? sanitize_text_field( $input['footer_credit'] ) : '';
 
 		$domains = isset( $input['dev_domains'] ) ? explode( ',', sanitize_text_field( $input['dev_domains'] ) ) : array();
-		$domains = array_filter(
-			array_map(
-				function ( $domain ) {
-					$domain = strtolower( trim( $domain ) );
-					$host   = wp_parse_url( ( false === strpos( $domain, '//' ) ? 'http://' : '' ) . $domain, PHP_URL_HOST );
-					return $host ? preg_replace( '/[^a-z0-9.\-]/', '', $host ) : '';
-				},
-				$domains
-			)
-		);
+		$domains = array_filter( array_map( array( __CLASS__, 'clean_domain' ), $domains ) );
 
 		$clean['dev_domains'] = implode( ', ', array_unique( $domains ) );
+
+		$agency                  = isset( $input['agency_domains'] ) ? explode( ',', sanitize_text_field( $input['agency_domains'] ) ) : array();
+		$agency                  = array_filter( array_map( array( __CLASS__, 'clean_domain' ), $agency ) );
+		$clean['agency_domains'] = implode( ', ', array_unique( $agency ) );
 
 		// A DKIM selector is a host label, a measurement code is letters, digits and dashes.
 		$selector               = isset( $input['dkim_selector'] ) ? sanitize_text_field( $input['dkim_selector'] ) : '';
@@ -316,6 +324,23 @@ class SEOHC_Settings {
 			esc_html__( 'Report pages that nothing links to', 'seo-health-check' ),
 			esc_html__( 'Counts links from the content of other pages and from your menus. Links in a sidebar, a footer or a widget are not scanned, so a page only reachable from there is reported as well. Blog posts that are only listed on an archive page count as unlinked too.', 'seo-health-check' )
 		);
+	}
+
+	/**
+	 * Reduces a domain the user typed to a bare hostname.
+	 *
+	 * @param string $domain Whatever was typed.
+	 * @return string Empty when it is not a hostname.
+	 */
+	public static function clean_domain( $domain ) {
+		$domain = strtolower( trim( (string) $domain ) );
+		if ( '' === $domain ) {
+			return '';
+		}
+
+		$host = wp_parse_url( ( false === strpos( $domain, '//' ) ? 'http://' : '' ) . $domain, PHP_URL_HOST );
+
+		return $host ? preg_replace( '/[^a-z0-9.\-]/', '', $host ) : '';
 	}
 
 	/**

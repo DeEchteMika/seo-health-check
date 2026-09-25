@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.7.0
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,6 +175,12 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.8.0 =
+* New launch check: where the forms send their mail. Catches forms still mailing to the WordPress administrator, forms without any recipient, and forms still mailing to the agency that built the site.
+* New launch check: which forms send the visitor to a thank you page and which only show a message.
+* New launch check: whether any spam protection is active at all.
+* Reads Contact Form 7, WPForms and Gravity Forms. Other form plugins can be added with the `seo_health_check_forms` filter.
 
 = 0.7.0 =
 * New launch check: whether mail can actually leave the site. WP Mail SMTP being active is not enough, because it starts out pointing at the same PHP mail function it replaces.
