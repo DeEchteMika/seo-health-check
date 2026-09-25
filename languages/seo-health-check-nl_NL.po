@@ -168,9 +168,17 @@ msgstr "Er loopt al een scan."
 msgid "A site icon is set in WordPress."
 msgstr "Er is een site-icoon ingesteld in WordPress."
 
+#: includes/class-seohc-settings.php:451
+msgid "About this plugin"
+msgstr "Over deze plugin"
+
 #: includes/class-seohc-launch-checks.php:167
 msgid "Action needed"
 msgstr "Actie nodig"
+
+#: includes/class-seohc-settings.php:446
+msgid "Action Scheduler"
+msgstr "Action Scheduler"
 
 #: includes/admin/class-seohc-inline-edit.php:317
 msgid "Activate Yoast SEO or Rank Math to store this field."
@@ -246,6 +254,10 @@ msgstr "Automatisch: de weergegeven pagina gebruiken als de berichtinhoud leeg i
 msgid "Average score"
 msgstr "Gemiddelde score"
 
+#: includes/class-seohc-settings.php:444
+msgid "Background work through"
+msgstr "Achtergrondwerk via"
+
 #: includes/class-seohc-settings.php:173
 msgid "Batch size"
 msgstr "Batchgrootte"
@@ -313,6 +325,10 @@ msgstr "Opslaan is niet gelukt. Probeer het opnieuw."
 #: includes/class-seohc-settings.php:285
 msgid "Counts links from the content of other pages and from your menus. Links in a sidebar, a footer or a widget are not scanned, so a page only reachable from there is reported as well. Blog posts that are only listed on an archive page count as unlinked too."
 msgstr "Telt links uit de content van andere pagina’s en uit je menu’s. Links in een zijbalk, een footer of een widget worden niet gescand, dus een pagina die alleen daar staat wordt ook gemeld. Blogberichten die alleen op een archiefpagina staan tellen eveneens als niet gelinkt."
+
+#: includes/class-seohc-settings.php:441
+msgid "Database version"
+msgstr "Databaseversie"
 
 #: includes/class-seohc-schedule.php:238
 msgid "Days"
@@ -1152,6 +1168,10 @@ msgstr "Het bericht heeft geen openbare URL."
 msgid "The post has no title."
 msgstr "Het bericht heeft geen titel."
 
+#: includes/class-seohc-settings.php:466
+msgid "The project page, where new versions are published"
+msgstr "De projectpagina, waar nieuwe versies verschijnen"
+
 #: includes/class-seohc-schedule.php:235
 msgid "The report"
 msgstr "Het rapport"
@@ -1267,6 +1287,10 @@ msgstr "Titel"
 msgid "Title too long"
 msgstr "Titel te lang"
 
+#: includes/class-seohc-settings.php:442
+msgid "Titles and descriptions from"
+msgstr "Titels en descriptions uit"
+
 #: includes/admin/class-seohc-scans-page.php:61
 msgid "Took"
 msgstr "Duur"
@@ -1317,6 +1341,10 @@ msgstr "URL"
 msgid "URL structure"
 msgstr "URL-structuur"
 
+#: includes/class-seohc-settings.php:440
+msgid "Version"
+msgstr "Versie"
+
 #: includes/admin/class-seohc-issues-list-table.php:204
 #: includes/admin/class-seohc-pages-list-table.php:217
 msgid "View"
@@ -1361,6 +1389,10 @@ msgstr "WordPress, plugins en thema’s up-to-date"
 #: includes/admin/class-seohc-pages-list-table.php:53
 msgid "Words"
 msgstr "Woorden"
+
+#: includes/class-seohc-settings.php:447
+msgid "WP-Cron"
+msgstr "WP-Cron"
 
 #: includes/class-seohc-launch-checks.php:108
 msgid "WWW / non-WWW and HTTP / HTTPS redirects"

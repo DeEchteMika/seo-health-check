@@ -417,7 +417,56 @@ class SEOHC_Settings {
 				submit_button();
 				?>
 			</form>
+
+			<?php self::render_about(); ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Which version is running, and what it found to work with.
+	 *
+	 * WordPress only shows the version on the Plugins screen, which is not where you are when
+	 * you are working in the plugin. This one is not installed from wordpress.org either, so
+	 * nothing will ever tell you a newer version exists: hence the link to the project.
+	 */
+	private static function render_about() {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		$data = get_plugin_data( SEOHC_FILE, false, false );
+		$rows = array(
+			array( __( 'Version', 'seo-health-check' ), SEOHC_VERSION ),
+			array( __( 'Database version', 'seo-health-check' ), SEOHC_DB_VERSION ),
+			array( __( 'Titles and descriptions from', 'seo-health-check' ), SEOHC_SEO_Meta::provider_label() ),
+			array(
+				__( 'Background work through', 'seo-health-check' ),
+				SEOHC_Scan_Queue::use_action_scheduler()
+					? __( 'Action Scheduler', 'seo-health-check' )
+					: __( 'WP-Cron', 'seo-health-check' ),
+			),
+		);
+		?>
+		<h2><?php esc_html_e( 'About this plugin', 'seo-health-check' ); ?></h2>
+		<table class="seohc-about">
+			<tbody>
+				<?php foreach ( $rows as $row ) : ?>
+					<tr>
+						<th scope="row"><?php echo esc_html( $row[0] ); ?></th>
+						<td><?php echo esc_html( $row[1] ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+
+		<?php if ( ! empty( $data['PluginURI'] ) ) : ?>
+			<p class="description">
+				<a href="<?php echo esc_url( $data['PluginURI'] ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'The project page, where new versions are published', 'seo-health-check' ); ?>
+				</a>
+			</p>
+		<?php endif; ?>
 		<?php
 	}
 }

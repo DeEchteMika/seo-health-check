@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.5.1
+Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,6 +175,9 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.5.2 =
+* New: the settings screen shows which version is running, along with the database version, which SEO plugin the titles come from, and whether scans run through Action Scheduler or WP-Cron.
 
 = 0.5.1 =
 * The hint in the email field is an example address again, instead of the real address of the site administrator.

@@ -281,6 +281,24 @@
 	margin-bottom: 0;
 }
 
+/* Version and surroundings, at the bottom of the settings screen. */
+.seohc-about {
+	border-collapse: collapse;
+	margin-bottom: 8px;
+}
+
+.seohc-about th {
+	padding: 4px 24px 4px 0;
+	font-weight: 400;
+	color: #50575e;
+	text-align: left;
+}
+
+.seohc-about td {
+	padding: 4px 0;
+	font-weight: 600;
+}
+
 /* Automatic scan. */
 .seohc-days {
 	display: flex;
