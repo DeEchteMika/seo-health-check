@@ -1415,8 +1415,8 @@ msgid "The post has no title."
 msgstr "Het bericht heeft geen titel."
 
 #: includes/class-seohc-settings.php:523
-msgid "The project page, where new versions are published"
-msgstr "De projectpagina, waar nieuwe versies verschijnen"
+msgid "The project page, where you can read what changed per version"
+msgstr "De projectpagina, waar je per versie kunt lezen wat er is veranderd"
 
 #: includes/class-seohc-schedule.php:235
 msgid "The report"
@@ -1523,6 +1523,10 @@ msgstr "Dit probleem kun je niet vanaf dit scherm oplossen."
 #: includes/class-seohc-launch-checks.php:198
 msgid "This makes a few requests to your own site and can take up to half a minute."
 msgstr "Hiervoor worden een paar verzoeken aan je eigen site gedaan; dat kan tot een halve minuut duren."
+
+#: includes/class-seohc-updater.php:249
+msgid "This release came without notes."
+msgstr "Bij deze versie zijn geen release-notities meegegeven."
 
 #: includes/admin/class-seohc-inline-edit.php:163
 msgid "This result no longer exists. Refresh the page."

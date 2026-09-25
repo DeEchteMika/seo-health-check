@@ -38,9 +38,11 @@ class SEOHC_Plugin {
 		SEOHC_Installer::maybe_upgrade();
 		SEOHC_Scan_Queue::init();
 
-		// Outside is_admin(): a planned scan fires on a front-end visit.
+		// Outside is_admin(): a planned scan fires on a front-end visit, and WordPress
+		// refreshes its update list from cron as well.
 		SEOHC_Schedule::init();
 		SEOHC_Mailer::init();
+		SEOHC_Updater::init();
 
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 

@@ -3,7 +3,7 @@
  * Plugin Name:       SEO Health Check
  * Plugin URI:        https://github.com/DeEchteMika/seo-health-check
  * Description:       Scans your posts and pages for common on-page SEO problems (titles, meta descriptions, alt texts, headings, thin content and broken internal links) and reports them in the dashboard.
- * Version:           0.9.0
+ * Version:           0.10.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Mika Leonard
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SEOHC_VERSION', '0.9.0' );
+define( 'SEOHC_VERSION', '0.10.0' );
 define( 'SEOHC_DB_VERSION', '4' );
 define( 'SEOHC_FILE', __FILE__ );
 define( 'SEOHC_DIR', plugin_dir_path( __FILE__ ) );
@@ -38,6 +38,7 @@ require_once SEOHC_DIR . 'includes/class-seohc-schedule.php';
 require_once SEOHC_DIR . 'includes/class-seohc-mailer.php';
 require_once SEOHC_DIR . 'includes/class-seohc-forms.php';
 require_once SEOHC_DIR . 'includes/class-seohc-launch-checks.php';
+require_once SEOHC_DIR . 'includes/class-seohc-updater.php';
 require_once SEOHC_DIR . 'includes/class-seohc-plugin.php';
 
 register_activation_hook( __FILE__, array( 'SEOHC_Installer', 'activate' ) );

@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.9.0
+Stable tag: 0.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -73,6 +73,7 @@ Page builders such as Oxygen, Breakdance and Elementor store their layout outsid
 * Export the (filtered) results as CSV, ready for Excel.
 * Posts are rescanned automatically in the background when you save them.
 * Scan on a schedule and receive the report by email.
+* Tells you on the Plugins screen when a newer release is out, the same way plugins from wordpress.org do.
 * Removes all of its data when you delete the plugin.
 * Translation ready, with a Dutch translation included.
 
@@ -142,6 +143,12 @@ Use **Send a test report** on the **Automatic scan** screen. If it fails, the re
 
 In `wp-content/uploads/seo-health-check/`. They list every page of the site and what is wrong with it, so the folder gets an `.htaccess` that denies access and every file gets an unguessable name for servers that ignore `.htaccess`. Downloading goes through WordPress, which checks that you are allowed to. Deleting the plugin removes the folder.
 
+= How does the plugin know about updates? =
+
+Once a day it asks GitHub which release is the newest, and if that is newer than what you have, WordPress shows its usual "there is a new version available" line on the Plugins screen. Updating works from that screen like any other plugin.
+
+The answer is cached for twelve hours, so a site asks twice a day at most. A release without a proper `seo-health-check.zip` attached is ignored on purpose: WordPress would otherwise install the source archive GitHub generates, which unpacks into a folder with the version number in its name and switches the plugin off. To stop the site reaching out to GitHub at all, return false from the `seo_health_check_check_for_updates` filter.
+
 = Who can see the results? =
 
 Administrators (users with the `manage_options` capability). Developers can change this with the `seo_health_check_capability` filter.
@@ -175,6 +182,10 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.10.0 =
+* New: the Plugins screen now says when a newer release is available, and updating works from there, the same way it does for plugins from wordpress.org.
+* The "View version details" window shows the release notes.
 
 = 0.9.0 =
 * New launch check: whether the old development site actually sends visitors to the live one. The existing check reads the content; this one asks the server, so a redirect in a plugin, in .htaccess or at the DNS provider all count.

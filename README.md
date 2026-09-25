@@ -30,6 +30,8 @@ For the full description, installation steps and FAQ, see [readme.txt](readme.tx
 
 Requirements: WordPress 6.0+ and PHP 7.4+.
 
+Once installed, the plugin checks this repository for newer releases once a day and reports them on the **Plugins** screen, so updating works from there like any other plugin.
+
 ## Development
 
 ```bash
@@ -58,6 +60,7 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/class-seohc-link-checker.php` | Checks internal links |
 | `includes/class-seohc-launch-checks.php` | Site-wide go-live checks |
 | `includes/class-seohc-forms.php` | Reads Contact Form 7, WPForms and Gravity Forms |
+| `includes/class-seohc-updater.php` | Update notices, from the GitHub releases |
 | `includes/class-seohc-schedule.php` | When the next automatic scan is due |
 | `includes/class-seohc-mailer.php` | Builds, keeps and sends the report |
 | `includes/class-seohc-settings.php` | Settings API |

@@ -484,8 +484,8 @@ class SEOHC_Settings {
 	 * Which version is running, and what it found to work with.
 	 *
 	 * WordPress only shows the version on the Plugins screen, which is not where you are when
-	 * you are working in the plugin. This one is not installed from wordpress.org either, so
-	 * nothing will ever tell you a newer version exists: hence the link to the project.
+	 * you are working in the plugin. Since 0.10.0 the Plugins screen does announce a new
+	 * release, so the link below is for reading what changed rather than for finding out.
 	 */
 	private static function render_about() {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
@@ -520,7 +520,7 @@ class SEOHC_Settings {
 		<?php if ( ! empty( $data['PluginURI'] ) ) : ?>
 			<p class="description">
 				<a href="<?php echo esc_url( $data['PluginURI'] ); ?>" target="_blank" rel="noopener">
-					<?php esc_html_e( 'The project page, where new versions are published', 'seo-health-check' ); ?>
+					<?php esc_html_e( 'The project page, where you can read what changed per version', 'seo-health-check' ); ?>
 				</a>
 			</p>
 		<?php endif; ?>

@@ -42,6 +42,8 @@ function seohc_uninstall_site() {
 		delete_option( $option );
 	}
 
+	delete_site_transient( 'seohc_latest_release' );
+
 	wp_unschedule_hook( 'seohc_scheduled_scan' );
 	wp_unschedule_hook( 'seohc_process_batch' );
 	wp_unschedule_hook( 'seohc_scan_single_post' );
