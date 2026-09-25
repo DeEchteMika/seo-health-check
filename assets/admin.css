@@ -281,6 +281,23 @@
 	margin-bottom: 0;
 }
 
+/* Automatic scan. */
+.seohc-days {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 16px;
+}
+
+.seohc-days label {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.seohc-mail-error {
+	color: #b32d2e;
+}
+
 /* Scan history. */
 .seohc-intro {
 	max-width: 46em;

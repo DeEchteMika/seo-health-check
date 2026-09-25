@@ -13,11 +13,50 @@ defined( 'ABSPATH' ) || exit;
 class SEOHC_CSV_Exporter {
 
 	/**
-	 * Sends the CSV file and exits.
+	 * Sends the CSV file as a download and exits.
 	 *
 	 * @param array $filters Filters: issue_type, post_type, severity, search, status.
 	 */
 	public static function send( array $filters ) {
+		$filename = 'seo-health-check-' . gmdate( 'Y-m-d' ) . '.csv';
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+
+		// Straight to the browser, so a site with tens of thousands of issues never has to hold
+		// the whole file in memory at once.
+		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- streaming to output, not the file system.
+		self::write( $out, $filters );
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
+		exit;
+	}
+
+	/**
+	 * Builds the CSV and returns it, for attaching to a mail or writing to a file.
+	 *
+	 * @param array $filters Filters: issue_type, post_type, severity, search, status.
+	 * @return string
+	 */
+	public static function build( array $filters ) {
+		$out = fopen( 'php://temp', 'w+' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- a scratch stream, not the file system.
+
+		self::write( $out, $filters );
+		rewind( $out );
+		$csv = (string) stream_get_contents( $out );
+		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
+		return $csv;
+	}
+
+	/**
+	 * Writes the whole file to an open stream.
+	 *
+	 * @param resource $out     Stream to write to.
+	 * @param array    $filters Filters: issue_type, post_type, severity, search, status.
+	 */
+	private static function write( $out, array $filters ) {
 		$rows      = SEOHC_Repository::get_issues(
 			array_merge(
 				$filters,
@@ -28,14 +67,7 @@ class SEOHC_CSV_Exporter {
 				)
 			)
 		);
-		$filename  = 'seo-health-check-' . gmdate( 'Y-m-d' ) . '.csv';
 		$new_since = isset( $filters['new_since'] ) ? (string) $filters['new_since'] : '';
-
-		nocache_headers();
-		header( 'Content-Type: text/csv; charset=utf-8' );
-		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-
-		$out = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- streaming to output, not the file system.
 
 		// UTF-8 BOM so Excel opens accented characters correctly.
 		fwrite( $out, "\xEF\xBB\xBF" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
@@ -76,9 +108,6 @@ class SEOHC_CSV_Exporter {
 				)
 			);
 		}
-
-		fclose( $out ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
-		exit;
 	}
 
 	/**

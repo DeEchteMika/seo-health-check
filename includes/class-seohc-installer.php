@@ -36,6 +36,7 @@ class SEOHC_Installer {
 	public static function deactivate() {
 		SEOHC_Scan_Queue::unschedule_all();
 		wp_unschedule_hook( SEOHC_Scan_Queue::SINGLE_HOOK );
+		wp_clear_scheduled_hook( SEOHC_Schedule::HOOK );
 		delete_option( SEOHC_Scan_Queue::LOCK_KEY );
 
 		$state = SEOHC_Scan_Queue::get_state();
@@ -127,6 +128,9 @@ class SEOHC_Installer {
 		}
 
 		update_option( 'seohc_db_version', SEOHC_DB_VERSION );
+
+		// Activating again after a deactivation should pick the schedule back up.
+		SEOHC_Schedule::ensure_booked();
 	}
 
 	/**

@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,12 @@ A separate **Scans** screen keeps the last twenty finished scans: when each one 
 
 Alt texts, SEO titles and meta descriptions can be typed straight into the results list, with a character counter. The page is rescanned the moment you save, so the row updates itself. Problems that live inside the page content, such as headings and broken links, still link through to the edit screen.
 
+**Scanning by itself**
+
+Pick the days and the time, fill in one or more email addresses, and the plugin scans the site on its own. When the scan finishes it sends a report with the score, the totals, what appeared and what was solved, the most common issues and the results of the last few scans, with the full list attached as a CSV file.
+
+A copy of each report is kept on the site so you can look back at it, shielded from visitors and downloadable from the settings screen only. You choose how many are kept.
+
 **On your dashboard**
 
 A widget on the wp-admin home screen shows the average score, the number of issues, what the last scan added and solved, and a link to each screen. No need to go looking for the results.
@@ -66,6 +72,7 @@ Page builders such as Oxygen, Breakdance and Elementor store their layout outsid
 * Filter by issue type, post type and severity, or by status: new, unchanged or solved.
 * Export the (filtered) results as CSV, ready for Excel.
 * Posts are rescanned automatically in the background when you save them.
+* Scan on a schedule and receive the report by email.
 * Removes all of its data when you delete the plugin.
 * Translation ready, with a Dutch translation included.
 
@@ -123,6 +130,18 @@ Blog posts that are only listed on an archive page count as unlinked too. That i
 
 It is off until you fill in a maximum under **Settings > Maximum image size**; 300 KB is a sensible start. Only images inside your own uploads folder can be measured, because their file is read from disk. Images served from a CDN or another site are skipped rather than downloaded.
 
+= The automatic scan starts later than the time I set. =
+
+WordPress runs planned jobs when someone visits the site, so on a quiet site nothing happens until the first visitor arrives after that moment. To make it exact, have your host call `wp-cron.php` from a real cron job and set `DISABLE_WP_CRON` to true.
+
+= The report never arrives. =
+
+Use **Send a test report** on the **Automatic scan** screen. If it fails, the reason is shown right below it. Most hosts cannot send mail through PHP at all; installing an SMTP plugin and pointing it at a real mailbox solves that. Also check the spam folder: a message from a site nobody knows yet often lands there.
+
+= Where are the kept reports stored? =
+
+In `wp-content/uploads/seo-health-check/`. They list every page of the site and what is wrong with it, so the folder gets an `.htaccess` that denies access and every file gets an unguessable name for servers that ignore `.htaccess`. Downloading goes through WordPress, which checks that you are allowed to. Deleting the plugin removes the folder.
+
 = Who can see the results? =
 
 Administrators (users with the `manage_options` capability). Developers can change this with the `seo_health_check_capability` filter.
@@ -156,6 +175,12 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.5.0 =
+* New: scan on a schedule. Choose the days and the time; it runs in the time zone of the site.
+* New: a report by email after every scheduled scan, with the full list attached as CSV.
+* New: reports are kept on the site, shielded from visitors, with a download link and a limit you set.
+* New: a "Send a test report" button that shows why sending failed, instead of failing quietly.
 
 = 0.4.0 =
 * New check: heading levels that skip a step, for example an H2 followed by an H4.

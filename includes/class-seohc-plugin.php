@@ -38,6 +38,10 @@ class SEOHC_Plugin {
 		SEOHC_Installer::maybe_upgrade();
 		SEOHC_Scan_Queue::init();
 
+		// Outside is_admin(): a planned scan fires on a front-end visit.
+		SEOHC_Schedule::init();
+		SEOHC_Mailer::init();
+
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		if ( is_admin() ) {
@@ -46,6 +50,8 @@ class SEOHC_Plugin {
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-inline-edit.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-scans-page.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-dashboard-widget.php';
+			require_once SEOHC_DIR . 'includes/admin/class-seohc-schedule-page.php';
+			SEOHC_Schedule_Page::init();
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-admin.php';
 			SEOHC_Admin::init();
 		}

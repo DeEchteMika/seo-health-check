@@ -12,6 +12,8 @@ Every page also gets a **score from 0 to 100**, and **alt texts, SEO titles and 
 
 Every scan is compared with the one before it. Each issue is marked **New**, **Unchanged** or **Fixed**, solved issues stay in the list until the next scan, and a **Scans** page keeps the last twenty scans with what each one added and solved.
 
+The plugin can **scan on a schedule** (pick the days and the time) and **email the report** afterwards, with the full list attached as a CSV file and a copy kept on the site.
+
 A **dashboard widget** puts the main numbers on the wp-admin home screen, and the plugin ships with a **Dutch translation**.
 
 A separate **Launch checks** page checks site-wide go-live settings such as search engine visibility, HTTPS, sitemap, redirects and pending updates.
@@ -55,11 +57,14 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/class-seohc-content-resolver.php` | Chooses post content or the rendered page (page builders) |
 | `includes/class-seohc-link-checker.php` | Checks internal links |
 | `includes/class-seohc-launch-checks.php` | Site-wide go-live checks |
+| `includes/class-seohc-schedule.php` | When the next automatic scan is due |
+| `includes/class-seohc-mailer.php` | Builds, keeps and sends the report |
 | `includes/class-seohc-settings.php` | Settings API |
 | `includes/admin/class-seohc-issues-list-table.php` | The issues overview (`WP_List_Table`) |
 | `includes/admin/class-seohc-pages-list-table.php` | The page scores overview (`WP_List_Table`) |
 | `includes/admin/class-seohc-scans-page.php` | The scan history screen |
 | `includes/admin/class-seohc-dashboard-widget.php` | The widget on the wp-admin home screen |
+| `includes/admin/class-seohc-schedule-page.php` | The automatic scan screen |
 | `includes/admin/class-seohc-inline-edit.php` | Saving alt texts, titles and descriptions from the overview |
 | `includes/admin/class-seohc-admin.php` | Menus, screens, form handlers and the progress endpoint |
 | `languages/` | Translations (`nl_NL` included) |

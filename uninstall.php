@@ -28,10 +28,21 @@ function seohc_uninstall_site() {
 	);
 	// phpcs:enable
 
-	foreach ( array( 'seohc_settings', 'seohc_db_version', 'seohc_scan_state', 'seohc_scan_lock', 'seohc_launch_results', 'seohc_link_cache_generation', 'seohc_scan_history' ) as $option ) {
+	// Kept reports name every page of the site, so they go too.
+	$seohc_uploads = wp_get_upload_dir();
+	$seohc_folder  = trailingslashit( $seohc_uploads['basedir'] ) . 'seo-health-check';
+	foreach ( (array) glob( $seohc_folder . '/*' ) as $seohc_file ) {
+		wp_delete_file( $seohc_file );
+	}
+	if ( is_dir( $seohc_folder ) ) {
+		rmdir( $seohc_folder ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- the plugin's own folder.
+	}
+
+	foreach ( array( 'seohc_settings', 'seohc_db_version', 'seohc_scan_state', 'seohc_scan_lock', 'seohc_launch_results', 'seohc_link_cache_generation', 'seohc_scan_history', 'seohc_schedule', 'seohc_report_state' ) as $option ) {
 		delete_option( $option );
 	}
 
+	wp_unschedule_hook( 'seohc_scheduled_scan' );
 	wp_unschedule_hook( 'seohc_process_batch' );
 	wp_unschedule_hook( 'seohc_scan_single_post' );
 	if ( function_exists( 'as_unschedule_all_actions' ) ) {

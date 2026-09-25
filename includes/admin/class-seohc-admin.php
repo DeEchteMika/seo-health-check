@@ -69,10 +69,11 @@ class SEOHC_Admin {
 		add_submenu_page( self::MENU_SLUG, __( 'SEO issues', 'seo-health-check' ), __( 'Issues', 'seo-health-check' ), $cap, self::MENU_SLUG, array( __CLASS__, 'render_overview' ) );
 		$pages    = add_submenu_page( self::MENU_SLUG, __( 'Page scores', 'seo-health-check' ), __( 'Page scores', 'seo-health-check' ), $cap, self::PAGES_SLUG, array( __CLASS__, 'render_pages' ) );
 		$scans    = add_submenu_page( self::MENU_SLUG, __( 'Scan history', 'seo-health-check' ), __( 'Scans', 'seo-health-check' ), $cap, self::SCANS_SLUG, array( 'SEOHC_Scans_Page', 'render_page' ) );
+		$planned  = add_submenu_page( self::MENU_SLUG, __( 'Automatic scan', 'seo-health-check' ), __( 'Automatic scan', 'seo-health-check' ), $cap, SEOHC_Schedule::PAGE_SLUG, array( 'SEOHC_Schedule_Page', 'render_page' ) );
 		$launch   = add_submenu_page( self::MENU_SLUG, __( 'Launch checks', 'seo-health-check' ), __( 'Launch checks', 'seo-health-check' ), $cap, 'seo-health-check-launch', array( 'SEOHC_Launch_Checks', 'render_page' ) );
 		$settings = add_submenu_page( self::MENU_SLUG, __( 'SEO Health Check settings', 'seo-health-check' ), __( 'Settings', 'seo-health-check' ), $cap, SEOHC_Settings::PAGE_SLUG, array( 'SEOHC_Settings', 'render_page' ) );
 
-		self::$hooks = array( $overview, $pages, $scans, $launch, $settings );
+		self::$hooks = array( $overview, $pages, $scans, $planned, $launch, $settings );
 
 		add_action( 'load-' . $overview, array( __CLASS__, 'add_screen_options' ) );
 		add_action( 'load-' . $pages, array( __CLASS__, 'add_pages_screen_options' ) );
