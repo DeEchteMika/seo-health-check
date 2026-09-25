@@ -108,3 +108,142 @@
 .shc-launch-table td:nth-child(2) {
 	width: 120px;
 }
+
+/* Score badge, shown on the issues list and the page scores list. */
+.seohc-score {
+	display: inline-block;
+	min-width: 38px;
+	padding: 3px 9px;
+	border-radius: 10px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+
+.seohc-score--good {
+	background: #edfaef;
+	color: #00581c;
+}
+
+.seohc-score--fair {
+	background: #fcf9e8;
+	color: #6e4f00;
+}
+
+.seohc-score--poor {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+/* Change since the previous scan. */
+.seohc-delta {
+	display: inline-block;
+	margin-left: 6px;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.seohc-delta--better {
+	color: #00701f;
+}
+
+.seohc-delta--worse {
+	color: #b32d2e;
+}
+
+.seohc-delta--same {
+	color: #787c82;
+}
+
+.shc-card__value .seohc-score {
+	font-size: 26px;
+	padding: 2px 12px;
+}
+
+/* Issues that appeared in the most recent scan. */
+.seohc-badge--new {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 10px;
+	background: #f0f6fc;
+	color: #0a4b78;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.seohc-row--new td:first-child {
+	box-shadow: inset 3px 0 0 #2271b1;
+}
+
+.seohc-row--fixed {
+	opacity: 0.55;
+}
+
+.seohc-row--fixed .seohc-details {
+	text-decoration: line-through;
+}
+
+.seohc-filter-new {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0 8px 0 4px;
+	vertical-align: middle;
+}
+
+/* Fixing an issue without leaving the overview. */
+.seohc-inline {
+	margin-top: 4px;
+}
+
+.seohc-inline__form {
+	margin-top: 8px;
+	padding: 10px 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #f6f7f7;
+	max-width: 480px;
+}
+
+.seohc-inline__input {
+	width: 100%;
+	resize: vertical;
+}
+
+.seohc-inline__meta {
+	margin: 6px 0 10px;
+	color: #50575e;
+	font-size: 12px;
+}
+
+.seohc-inline__count {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.seohc-inline__count.is-over {
+	color: #b32d2e;
+	font-weight: 600;
+}
+
+.seohc-inline__status {
+	margin-left: 8px;
+	font-size: 12px;
+	color: #50575e;
+}
+
+.shc-wrap .column-score {
+	width: 80px;
+}
+
+.shc-wrap .column-first_seen {
+	width: 110px;
+}
+
+.shc-wrap .column-issue_count,
+.shc-wrap .column-word_count {
+	width: 80px;
+}

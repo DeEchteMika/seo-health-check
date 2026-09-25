@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.1
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,18 @@ SEO Health Check scans every post and page on your site for the on-page SEO prob
 
 Titles and meta descriptions are read from **Yoast SEO** or **Rank Math** when one of them is active, including their templates and variables. Without an SEO plugin, the WordPress defaults are used.
 
+**A score per page**
+
+Every scanned page gets a score from 0 to 100 on its own screen, worst first, so you can see at a glance which pages need attention. Each kind of problem costs points, an error twice as much as a warning, and repeats of the same problem a little extra.
+
+**See what changed**
+
+Every finished scan is compared with the one before it. The overview shows whether the number of issues went up or down, and issues that appeared in the latest scan are marked "New" so you can filter on them.
+
+**Fix things without leaving the overview**
+
+Alt texts, SEO titles and meta descriptions can be typed straight into the results list, with a character counter. The page is rescanned the moment you save, so the row updates itself. Problems that live inside the page content, such as headings and broken links, still link through to the edit screen.
+
 **Launch checks**
 
 A separate page checks site-wide settings from a typical go-live checklist: search engine visibility, HTTPS, permalinks, favicon, a real 404 status, XML sitemap, WWW / HTTPS redirects, pending updates, inactive plugins, cookie consent, analytics code, links to your development domain and more.
@@ -40,7 +52,7 @@ Page builders such as Oxygen, Breakdance and Elementor store their layout outsid
 **Other features**
 
 * Sortable, filterable and searchable overview built on the standard WordPress list table.
-* Filter by issue type, post type and severity.
+* Filter by issue type, post type and severity, or show only what is new.
 * Export the (filtered) results as CSV, ready for Excel.
 * Posts are rescanned automatically in the background when you save them.
 * Removes all of its data when you delete the plugin.
@@ -86,7 +98,9 @@ Links to the same domain as the site (with or without www). External links, emai
 
 = Does the plugin change my content? =
 
-No. It only reads your content and stores its findings in two tables of its own.
+Scanning never changes anything: it reads your content and stores its findings in two tables of its own.
+
+The one exception is when you fix something yourself from the overview. Saving a meta description or SEO title writes that single field in Yoast SEO or Rank Math. Saving an alt text stores it on the image in the media library and, when that image is embedded in the page, sets the alt attribute of that one image tag. Nothing else in the page is touched.
 
 = Who can see the results? =
 
@@ -96,18 +110,37 @@ Administrators (users with the `manage_options` capability). Developers can chan
 
 Deactivating stops all background work but keeps the results. Deleting the plugin from the **Plugins** screen removes its tables, settings and cached data.
 
+= How is the score calculated? =
+
+A page starts at 100. Every distinct issue type costs 20 points for an error and 10 for a warning, plus 2 points per repeat of the same type, capped at 10 extra per type. Ten images without alt text therefore hurt, but less than ten different problems. Developers can change the result with the `seo_health_check_page_score` filter.
+
+= Which fields can I edit from the overview? =
+
+Alt text, SEO title and meta description, because each is stored on its own. Titles and descriptions need Yoast SEO or Rank Math, since the plugin writes the value into their field. Missing H1s, thin content and broken links live inside the page content, so those link to the edit screen instead.
+
+= What counts as a "new" issue? =
+
+Anything first reported by the most recent scan. The plugin remembers when it first saw each issue, so an issue that has been there for months stays unmarked even though it is found again every scan.
+
 = Can I add my own checks? =
 
 Yes. Use the `seo_health_check_issue_types` filter to register a new issue type and `seo_health_check_post_issues` to add issues for a post.
 
 == Screenshots ==
 
-1. The issues overview with summary, filters and direct edit links.
-2. A scan running in the background.
-3. The launch checks page.
-4. The settings page.
+1. The issues overview with scores, what changed since the previous scan, and inline fixing.
+2. The page scores screen, worst pages first.
+3. A scan running in the background.
+4. The launch checks page.
+5. The settings page.
 
 == Changelog ==
+
+= 0.2.0 =
+* New: a score from 0 to 100 per page, on its own screen and in the issues list.
+* New: every scan is compared with the previous one, and new issues are marked.
+* New: edit alt texts, SEO titles and meta descriptions straight from the overview.
+* The database is upgraded automatically; existing results keep working.
 
 = 0.1.1 =
 * Author name set to Mika Leonard.

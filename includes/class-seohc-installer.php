@@ -73,11 +73,14 @@ class SEOHC_Installer {
 				post_id bigint(20) unsigned NOT NULL,
 				issue_type varchar(40) NOT NULL,
 				severity varchar(10) NOT NULL,
+				object_id bigint(20) unsigned NOT NULL DEFAULT 0,
 				details text NOT NULL,
 				created_at datetime NOT NULL,
+				first_seen datetime NOT NULL,
 				PRIMARY KEY  (id),
 				KEY post_id (post_id),
-				KEY issue_type (issue_type)
+				KEY issue_type (issue_type),
+				KEY first_seen (first_seen)
 			) {$charset_collate};"
 		);
 
@@ -91,14 +94,40 @@ class SEOHC_Installer {
 				description_hash char(32) NOT NULL DEFAULT '',
 				word_count int(10) unsigned NOT NULL DEFAULT 0,
 				issue_count int(10) unsigned NOT NULL DEFAULT 0,
+				score tinyint(3) unsigned NOT NULL DEFAULT 100,
 				scanned_at datetime NOT NULL,
 				PRIMARY KEY  (post_id),
 				KEY title_hash (title_hash),
-				KEY description_hash (description_hash)
+				KEY description_hash (description_hash),
+				KEY score (score)
 			) {$charset_collate};"
 		);
 
 		add_option( SEOHC_Settings::OPTION, SEOHC_Settings::defaults() );
+
+		// Results stored before the score and first-seen columns existed carry defaults; recalculate them.
+		if ( get_option( 'seohc_db_version' ) && get_option( 'seohc_db_version' ) !== SEOHC_DB_VERSION ) {
+			self::backfill();
+		}
+
 		update_option( 'seohc_db_version', SEOHC_DB_VERSION );
+	}
+
+	/**
+	 * Fills the columns added by an upgrade for results that were scanned with an older version.
+	 */
+	private static function backfill() {
+		global $wpdb;
+
+		$issues = SEOHC_Repository::issues_table();
+		$pages  = SEOHC_Repository::pages_table();
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the plugin's own tables.
+		$wpdb->query( "UPDATE {$issues} SET first_seen = created_at WHERE first_seen = '0000-00-00 00:00:00' OR first_seen IS NULL" );
+
+		$post_ids = $wpdb->get_col( "SELECT post_id FROM {$pages}" );
+		// phpcs:enable
+
+		SEOHC_Repository::refresh_scores( array_map( 'intval', $post_ids ) );
 	}
 }

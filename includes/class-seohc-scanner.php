@@ -162,7 +162,13 @@ class SEOHC_Scanner {
 			if ( '' === $src ) {
 				$src = $img->getAttribute( 'data-src' );
 			}
-			self::add( $issues, 'image_missing_alt', $src ? wp_basename( strtok( $src, '?' ) ) : __( '(image without source)', 'seo-health-check' ) );
+
+			self::add(
+				$issues,
+				'image_missing_alt',
+				$src ? wp_basename( strtok( $src, '?' ) ) : __( '(image without source)', 'seo-health-check' ),
+				self::attachment_id_from_url( $src )
+			);
 		}
 	}
 
@@ -179,8 +185,13 @@ class SEOHC_Scanner {
 		}
 		$alt = (string) get_post_meta( $thumbnail_id, '_wp_attachment_image_alt', true );
 		if ( '' === trim( $alt ) ) {
-			/* translators: %s: file name. */
-			self::add( $issues, 'image_missing_alt', sprintf( __( 'Featured image: %s', 'seo-health-check' ), wp_basename( (string) get_attached_file( $thumbnail_id ) ) ) );
+			self::add(
+				$issues,
+				'image_missing_alt',
+				/* translators: %s: file name. */
+				sprintf( __( 'Featured image: %s', 'seo-health-check' ), wp_basename( (string) get_attached_file( $thumbnail_id ) ) ),
+				$thumbnail_id
+			);
 		}
 	}
 
@@ -245,16 +256,42 @@ class SEOHC_Scanner {
 	}
 
 	/**
+	 * Finds the media library item an image URL belongs to, so its alt text can be edited inline.
+	 *
+	 * Content images usually point at a resized file (image-1024x490.jpg), which is not stored as
+	 * its own attachment, so the size suffix is stripped before looking the URL up.
+	 *
+	 * @param string $src Image URL.
+	 * @return int Attachment ID, or 0 when the image is not in the media library.
+	 */
+	private static function attachment_id_from_url( $src ) {
+		$src = strtok( (string) $src, '?' );
+		if ( '' === $src ) {
+			return 0;
+		}
+
+		$attachment_id = attachment_url_to_postid( $src );
+		if ( $attachment_id ) {
+			return $attachment_id;
+		}
+
+		$full = preg_replace( '/-\d+x\d+(\.[a-zA-Z0-9]+)$/', '$1', $src );
+		return $full !== $src ? attachment_url_to_postid( $full ) : 0;
+	}
+
+	/**
 	 * Appends an issue.
 	 *
-	 * @param array  $issues  Issues (by reference).
-	 * @param string $type    Issue type.
-	 * @param string $details Details shown in the overview.
+	 * @param array  $issues    Issues (by reference).
+	 * @param string $type      Issue type.
+	 * @param string $details   Details shown in the overview.
+	 * @param int    $object_id Attachment the issue is about, when there is one. Enables inline editing.
 	 */
-	private static function add( array &$issues, $type, $details ) {
+	private static function add( array &$issues, $type, $details, $object_id = 0 ) {
 		$issues[] = array(
-			'type'    => $type,
-			'details' => $details,
+			'type'      => $type,
+			'details'   => $details,
+			'object_id' => (int) $object_id,
 		);
 	}
 }

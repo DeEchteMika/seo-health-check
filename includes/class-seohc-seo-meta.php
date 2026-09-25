@@ -142,12 +142,13 @@ class SEOHC_SEO_Meta {
 		}
 		if ( function_exists( 'wpseo_replace_vars' ) ) {
 			try {
-				return (string) wpseo_replace_vars( $value, $post );
+				$replaced = (string) wpseo_replace_vars( $value, $post );
 			} catch ( Throwable $e ) {
-				return $fallback;
+				$replaced = '';
 			}
+			return self::usable( $replaced ) ? $replaced : $fallback;
 		}
-		return false === strpos( $value, '%%' ) ? $value : $fallback;
+		return self::usable( $value ) ? $value : $fallback;
 	}
 
 	/**
@@ -164,12 +165,29 @@ class SEOHC_SEO_Meta {
 		}
 		if ( class_exists( '\RankMath\Helper' ) && method_exists( '\RankMath\Helper', 'replace_vars' ) ) {
 			try {
-				return (string) \RankMath\Helper::replace_vars( $value, $post );
+				$replaced = (string) \RankMath\Helper::replace_vars( $value, $post );
 			} catch ( Throwable $e ) {
-				return $fallback;
+				$replaced = '';
 			}
+			return self::usable( $replaced ) ? $replaced : $fallback;
 		}
-		return false === strpos( $value, '%' ) ? $value : $fallback;
+		return self::usable( $value ) ? $value : $fallback;
+	}
+
+	/**
+	 * Whether a resolved value can be stored as the real title or description.
+	 *
+	 * SEO plugins only resolve their own variables reliably on their own screens. Asked from a
+	 * background scan or an Ajax request they sometimes hand back the raw template, which would
+	 * be stored as the page title and then reported as a duplicate on every page. Anything that
+	 * still contains %variable% or %%variable%% is therefore rejected in favour of the fallback.
+	 *
+	 * @param string $value Resolved value.
+	 * @return bool
+	 */
+	private static function usable( $value ) {
+		$value = trim( (string) $value );
+		return '' !== $value && ! preg_match( '/%%?[a-z0-9_-]+%%?/i', $value );
 	}
 
 	/**

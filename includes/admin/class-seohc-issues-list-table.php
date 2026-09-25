@@ -24,11 +24,19 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	private $filters;
 
 	/**
+	 * GMT datetime the most recent scan started; issues first seen after it are new.
+	 *
+	 * @var string
+	 */
+	private $new_since;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param array $filters Sanitized filters from SEOHC_Admin::current_filters().
+	 * @param array  $filters   Sanitized filters from SEOHC_Admin::current_filters().
+	 * @param string $new_since GMT datetime the most recent scan started.
 	 */
-	public function __construct( array $filters ) {
+	public function __construct( array $filters, $new_since = '' ) {
 		parent::__construct(
 			array(
 				'singular' => 'issue',
@@ -36,7 +44,8 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 				'ajax'     => false,
 			)
 		);
-		$this->filters = $filters;
+		$this->filters   = $filters;
+		$this->new_since = (string) $new_since;
 	}
 
 	/**
@@ -47,11 +56,12 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
 			'post_title' => __( 'Page', 'seo-health-check' ),
+			'score'      => __( 'Score', 'seo-health-check' ),
 			'issue_type' => __( 'Issue', 'seo-health-check' ),
 			'details'    => __( 'Details', 'seo-health-check' ),
 			'severity'   => __( 'Severity', 'seo-health-check' ),
 			'post_type'  => __( 'Type', 'seo-health-check' ),
-			'created_at' => __( 'Scanned', 'seo-health-check' ),
+			'first_seen' => __( 'Since', 'seo-health-check' ),
 		);
 	}
 
@@ -66,7 +76,7 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 			'issue_type' => array( 'issue_type', false ),
 			'severity'   => array( 'severity', false ),
 			'post_type'  => array( 'post_type', false ),
-			'created_at' => array( 'created_at', true ),
+			'first_seen' => array( 'first_seen', true ),
 		);
 	}
 
@@ -163,6 +173,11 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 				<option value="warning" <?php selected( $this->filters['severity'], 'warning' ); ?>><?php esc_html_e( 'Warnings', 'seo-health-check' ); ?></option>
 			</select>
 
+			<label class="seohc-filter-new">
+				<input type="checkbox" name="seohc_new" value="1" <?php checked( ! empty( $this->filters['only_new'] ) ); ?>>
+				<?php esc_html_e( 'Only new since the last scan', 'seo-health-check' ); ?>
+			</label>
+
 			<?php submit_button( __( 'Filter', 'seo-health-check' ), '', 'filter_action', false ); ?>
 		</div>
 		<?php
@@ -245,8 +260,88 @@ class SEOHC_Issues_List_Table extends WP_List_Table {
 	 * @param object $item Row.
 	 * @return string
 	 */
-	protected function column_created_at( $item ) {
-		return esc_html( get_date_from_gmt( $item->created_at, get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) );
+	protected function column_first_seen( $item ) {
+		$date = esc_html( get_date_from_gmt( $item->first_seen, get_option( 'date_format' ) ) );
+
+		if ( $this->is_new( $item ) ) {
+			return '<span class="seohc-badge seohc-badge--new">' . esc_html__( 'New', 'seo-health-check' ) . '</span><br>' . $date;
+		}
+		return $date;
+	}
+
+	/**
+	 * Whether the issue first appeared in the most recent scan.
+	 *
+	 * @param object $item Row.
+	 * @return bool
+	 */
+	private function is_new( $item ) {
+		return '' !== $this->new_since && $item->first_seen >= $this->new_since;
+	}
+
+	/**
+	 * Score of the page the issue belongs to.
+	 *
+	 * @param object $item Row.
+	 * @return string
+	 */
+	protected function column_score( $item ) {
+		return SEOHC_Admin::score_badge( (int) $item->score );
+	}
+
+	/**
+	 * Details column, with an inline editor for the fields that can be fixed here.
+	 *
+	 * @param object $item Row.
+	 * @return string
+	 */
+	protected function column_details( $item ) {
+		$html   = '<span class="seohc-details">' . esc_html( $item->details ) . '</span>';
+		$editor = SEOHC_Inline_Edit::editor_for( $item );
+
+		if ( ! $editor ) {
+			return $html;
+		}
+
+		$id = 'seohc-inline-' . (int) $item->id;
+
+		$html .= sprintf(
+			'<div class="seohc-inline" data-issue="%1$d" data-max="%2$d">
+				<button type="button" class="button-link seohc-inline__toggle" aria-expanded="false" aria-controls="%3$s">%4$s</button>
+				<div class="seohc-inline__form" id="%3$s" hidden>
+					<label class="screen-reader-text" for="%3$s-input">%5$s</label>
+					<textarea id="%3$s-input" class="seohc-inline__input" rows="2">%6$s</textarea>
+					<p class="seohc-inline__meta"><span class="seohc-inline__count"></span> %7$s</p>
+					<button type="button" class="button button-primary button-small seohc-inline__save">%8$s</button>
+					<button type="button" class="button button-small seohc-inline__cancel">%9$s</button>
+					<span class="seohc-inline__status" role="status"></span>
+				</div>
+			</div>',
+			(int) $item->id,
+			(int) $editor['max_length'],
+			esc_attr( $id ),
+			/* translators: %s: field name, for example "Alt text". */
+			esc_html( sprintf( __( 'Edit %s', 'seo-health-check' ), mb_strtolower( $editor['label'] ) ) ),
+			esc_html( $editor['label'] ),
+			esc_textarea( $editor['value'] ),
+			esc_html( $editor['hint'] ),
+			esc_html__( 'Save', 'seo-health-check' ),
+			esc_html__( 'Cancel', 'seo-health-check' )
+		);
+
+		return $html;
+	}
+
+	/**
+	 * Adds a class to rows whose issue is new, so they can be highlighted.
+	 *
+	 * @param object $item Row.
+	 */
+	public function single_row( $item ) {
+		$classes = $this->is_new( $item ) ? ' class="seohc-row--new"' : '';
+		echo '<tr' . $classes . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed markup.
+		$this->single_row_columns( $item );
+		echo '</tr>';
 	}
 
 	/**

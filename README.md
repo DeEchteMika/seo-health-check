@@ -8,6 +8,8 @@ A WordPress plugin that scans posts and pages for common on-page SEO problems an
 - **thin content** (below a word count you choose)
 - **broken internal links**
 
+Every page also gets a **score from 0 to 100**, each scan is **compared with the previous one** (new issues are marked as such), and **alt texts, SEO titles and meta descriptions can be edited straight from the overview**.
+
 A separate **Launch checks** page checks site-wide go-live settings such as search engine visibility, HTTPS, sitemap, redirects and pending updates.
 
 Scans run in the background in batches (Action Scheduler or WP-Cron), so large sites scan without time-outs.
@@ -50,7 +52,10 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/class-seohc-link-checker.php` | Checks internal links |
 | `includes/class-seohc-launch-checks.php` | Site-wide go-live checks |
 | `includes/class-seohc-settings.php` | Settings API |
-| `includes/admin/` | Admin pages and the `WP_List_Table` overview |
+| `includes/admin/class-seohc-issues-list-table.php` | The issues overview (`WP_List_Table`) |
+| `includes/admin/class-seohc-pages-list-table.php` | The page scores overview (`WP_List_Table`) |
+| `includes/admin/class-seohc-inline-edit.php` | Saving alt texts, titles and descriptions from the overview |
+| `includes/admin/class-seohc-admin.php` | Menus, screens, form handlers and the progress endpoint |
 
 ### Hooks for developers
 
@@ -62,6 +67,8 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `seo_health_check_post_html` | filter | Change the HTML that is scanned |
 | `seo_health_check_seo_meta` | filter | Change the resolved title / description |
 | `seo_health_check_required_plugins` | filter | Plugins the launch check expects |
+| `seo_health_check_page_score` | filter | Change how a page's score is calculated |
+| `seo_health_check_inline_fields` | filter | Which issue types can be fixed from the overview |
 | `seo_health_check_scan_finished` | action | Runs when a full scan is done |
 
 ## License

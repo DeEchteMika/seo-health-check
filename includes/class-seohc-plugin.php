@@ -42,6 +42,8 @@ class SEOHC_Plugin {
 
 		if ( is_admin() ) {
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-issues-list-table.php';
+			require_once SEOHC_DIR . 'includes/admin/class-seohc-pages-list-table.php';
+			require_once SEOHC_DIR . 'includes/admin/class-seohc-inline-edit.php';
 			require_once SEOHC_DIR . 'includes/admin/class-seohc-admin.php';
 			SEOHC_Admin::init();
 		}

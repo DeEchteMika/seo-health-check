@@ -188,6 +188,9 @@ class SEOHC_Scan_Queue {
 		$state['last_activity'] = time();
 		self::set_state( $state );
 
+		// Snapshot the result so the next scan can be compared with this one.
+		SEOHC_Repository::record_run( $state['started_at'], $state['finished_at'] );
+
 		/**
 		 * Fires when a full scan has finished.
 		 *

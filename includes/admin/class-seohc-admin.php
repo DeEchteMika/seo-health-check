@@ -12,7 +12,8 @@ defined( 'ABSPATH' ) || exit;
  */
 class SEOHC_Admin {
 
-	const MENU_SLUG = 'seo-health-check';
+	const MENU_SLUG  = 'seo-health-check';
+	const PAGES_SLUG = 'seo-health-check-pages';
 
 	/**
 	 * Hook suffixes of the plugin's admin pages.
@@ -35,9 +36,11 @@ class SEOHC_Admin {
 		add_action( 'admin_post_seohc_export', array( __CLASS__, 'handle_export' ) );
 		add_action( 'wp_ajax_seohc_scan_status', array( __CLASS__, 'ajax_scan_status' ) );
 		SEOHC_Launch_Checks::init();
+		SEOHC_Inline_Edit::init();
 
 		add_filter( 'option_page_capability_' . SEOHC_Settings::OPTION_GRP, array( 'SEOHC_Plugin', 'capability' ) );
 		add_filter( 'set_screen_option_seohc_issues_per_page', array( __CLASS__, 'save_per_page' ), 10, 3 );
+		add_filter( 'set_screen_option_seohc_pages_per_page', array( __CLASS__, 'save_per_page' ), 10, 3 );
 		add_filter( 'plugin_action_links_' . plugin_basename( SEOHC_FILE ), array( __CLASS__, 'action_links' ) );
 	}
 
@@ -57,16 +60,18 @@ class SEOHC_Admin {
 			80
 		);
 		add_submenu_page( self::MENU_SLUG, __( 'SEO issues', 'seo-health-check' ), __( 'Issues', 'seo-health-check' ), $cap, self::MENU_SLUG, array( __CLASS__, 'render_overview' ) );
+		$pages    = add_submenu_page( self::MENU_SLUG, __( 'Page scores', 'seo-health-check' ), __( 'Page scores', 'seo-health-check' ), $cap, self::PAGES_SLUG, array( __CLASS__, 'render_pages' ) );
 		$launch   = add_submenu_page( self::MENU_SLUG, __( 'Launch checks', 'seo-health-check' ), __( 'Launch checks', 'seo-health-check' ), $cap, 'seo-health-check-launch', array( 'SEOHC_Launch_Checks', 'render_page' ) );
 		$settings = add_submenu_page( self::MENU_SLUG, __( 'SEO Health Check settings', 'seo-health-check' ), __( 'Settings', 'seo-health-check' ), $cap, SEOHC_Settings::PAGE_SLUG, array( 'SEOHC_Settings', 'render_page' ) );
 
-		self::$hooks = array( $overview, $launch, $settings );
+		self::$hooks = array( $overview, $pages, $launch, $settings );
 
 		add_action( 'load-' . $overview, array( __CLASS__, 'add_screen_options' ) );
+		add_action( 'load-' . $pages, array( __CLASS__, 'add_pages_screen_options' ) );
 	}
 
 	/**
-	 * "Items per page" screen option.
+	 * "Items per page" screen option for the issues overview.
 	 */
 	public static function add_screen_options() {
 		add_screen_option(
@@ -74,6 +79,19 @@ class SEOHC_Admin {
 			array(
 				'default' => 50,
 				'option'  => 'seohc_issues_per_page',
+			)
+		);
+	}
+
+	/**
+	 * "Items per page" screen option for the page scores overview.
+	 */
+	public static function add_pages_screen_options() {
+		add_screen_option(
+			'per_page',
+			array(
+				'default' => 50,
+				'option'  => 'seohc_pages_per_page',
 			)
 		);
 	}
@@ -120,12 +138,17 @@ class SEOHC_Admin {
 			'shc-admin',
 			'shcAdmin',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'seohc_scan_status' ),
-				'i18n'    => array(
+				'ajaxUrl'     => admin_url( 'admin-ajax.php' ),
+				'nonce'       => wp_create_nonce( 'seohc_scan_status' ),
+				'inlineNonce' => wp_create_nonce( SEOHC_Inline_Edit::NONCE ),
+				'i18n'        => array(
 					/* translators: 1: processed posts, 2: total posts. */
 					'progress' => __( '%1$s of %2$s pages scanned', 'seo-health-check' ),
 					'finished' => __( 'Scan finished. Reloading…', 'seo-health-check' ),
+					'saving'   => __( 'Saving…', 'seo-health-check' ),
+					'failed'   => __( 'Could not save. Try again.', 'seo-health-check' ),
+					/* translators: 1: characters used, 2: recommended maximum. */
+					'counter'  => __( '%1$d of %2$d characters', 'seo-health-check' ),
 				),
 			)
 		);
@@ -144,6 +167,7 @@ class SEOHC_Admin {
 		$search     = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 		$orderby    = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'post_title';
 		$order      = isset( $_GET['order'] ) ? sanitize_key( wp_unslash( $_GET['order'] ) ) : 'asc';
+		$only_new   = ! empty( $_GET['seohc_new'] );
 		// phpcs:enable
 
 		return array(
@@ -153,6 +177,82 @@ class SEOHC_Admin {
 			'search'     => $search,
 			'orderby'    => array_key_exists( $orderby, SEOHC_Repository::SORTABLE ) ? $orderby : 'post_title',
 			'order'      => 'desc' === $order ? 'DESC' : 'ASC',
+			'new_since'  => $only_new ? self::new_since() : '',
+			'only_new'   => $only_new,
+		);
+	}
+
+	/**
+	 * Sanitized filters for the page scores overview.
+	 *
+	 * @return array
+	 */
+	public static function current_page_filters() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only filters, no state change.
+		$band      = isset( $_GET['band'] ) ? sanitize_key( wp_unslash( $_GET['band'] ) ) : '';
+		$post_type = isset( $_GET['seohc_post_type'] ) ? sanitize_key( wp_unslash( $_GET['seohc_post_type'] ) ) : '';
+		$search    = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+		$orderby   = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'score';
+		$order     = isset( $_GET['order'] ) ? sanitize_key( wp_unslash( $_GET['order'] ) ) : 'asc';
+		// phpcs:enable
+
+		return array(
+			'band'      => array_key_exists( $band, SEOHC_Repository::score_bands() ) ? $band : '',
+			'post_type' => in_array( $post_type, (array) SEOHC_Settings::get( 'post_types' ), true ) ? $post_type : '',
+			'search'    => $search,
+			'orderby'   => array_key_exists( $orderby, SEOHC_Repository::SORTABLE_PAGES ) ? $orderby : 'score',
+			'order'     => 'desc' === $order ? 'DESC' : 'ASC',
+		);
+	}
+
+	/**
+	 * GMT datetime the most recent scan started. Issues first seen after it count as new.
+	 *
+	 * @return string Empty when the site was never scanned.
+	 */
+	public static function new_since() {
+		$state = SEOHC_Scan_Queue::get_state();
+		return (string) $state['started_at'];
+	}
+
+	/**
+	 * Renders a score as a coloured badge.
+	 *
+	 * @param int $score Score from 0 to 100.
+	 * @return string
+	 */
+	public static function score_badge( $score ) {
+		$score = max( 0, min( 100, (int) $score ) );
+
+		return sprintf(
+			'<span class="seohc-score seohc-score--%1$s">%2$s</span>',
+			esc_attr( SEOHC_Repository::band_for_score( $score ) ),
+			esc_html( number_format_i18n( $score ) )
+		);
+	}
+
+	/**
+	 * Renders the change since the previous scan.
+	 *
+	 * @param int  $current      Current value.
+	 * @param int  $previous     Value at the previous scan.
+	 * @param bool $less_is_good Whether a decrease is an improvement.
+	 * @return string
+	 */
+	public static function delta_badge( $current, $previous, $less_is_good = true ) {
+		$difference = (int) $current - (int) $previous;
+
+		if ( 0 === $difference ) {
+			return '<span class="seohc-delta seohc-delta--same">' . esc_html__( 'unchanged', 'seo-health-check' ) . '</span>';
+		}
+
+		$improved = $less_is_good ? $difference < 0 : $difference > 0;
+
+		return sprintf(
+			'<span class="seohc-delta seohc-delta--%1$s">%2$s%3$s</span>',
+			esc_attr( $improved ? 'better' : 'worse' ),
+			$difference > 0 ? '+' : '−',
+			esc_html( number_format_i18n( abs( $difference ) ) )
 		);
 	}
 
@@ -270,10 +370,11 @@ class SEOHC_Admin {
 	public static function render_overview() {
 		self::require_capability();
 
-		$filters = self::current_filters();
-		$state   = SEOHC_Scan_Queue::get_state();
-		$summary = SEOHC_Repository::summary();
-		$table   = new SEOHC_Issues_List_Table( $filters );
+		$filters  = self::current_filters();
+		$state    = SEOHC_Scan_Queue::get_state();
+		$summary  = SEOHC_Repository::summary();
+		$previous = SEOHC_Repository::previous_run();
+		$table    = new SEOHC_Issues_List_Table( $filters, self::new_since() );
 		$table->prepare_items();
 
 		$export_url = wp_nonce_url(
@@ -285,6 +386,7 @@ class SEOHC_Admin {
 						'seohc_post_type' => $filters['post_type'],
 						'severity'        => $filters['severity'],
 						's'               => $filters['search'],
+						'seohc_new'       => $filters['only_new'] ? '1' : '',
 					)
 				),
 				admin_url( 'admin-post.php' )
@@ -301,24 +403,7 @@ class SEOHC_Admin {
 
 			<?php self::render_notice(); ?>
 
-			<div class="shc-cards">
-				<div class="shc-card">
-					<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['pages'] ) ); ?></span>
-					<span class="shc-card__label"><?php esc_html_e( 'Pages scanned', 'seo-health-check' ); ?></span>
-				</div>
-				<div class="shc-card">
-					<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['pages_with_issues'] ) ); ?></span>
-					<span class="shc-card__label"><?php esc_html_e( 'Pages with issues', 'seo-health-check' ); ?></span>
-				</div>
-				<div class="shc-card">
-					<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['issues'] ) ); ?></span>
-					<span class="shc-card__label"><?php esc_html_e( 'Issues', 'seo-health-check' ); ?></span>
-				</div>
-				<div class="shc-card">
-					<span class="shc-card__value shc-card__value--small"><?php echo esc_html( SEOHC_SEO_Meta::provider_label() ); ?></span>
-					<span class="shc-card__label"><?php esc_html_e( 'SEO plugin', 'seo-health-check' ); ?></span>
-				</div>
-			</div>
+			<?php self::render_cards( $summary, $previous ); ?>
 
 			<?php self::render_scan_panel( $state ); ?>
 
@@ -330,6 +415,95 @@ class SEOHC_Admin {
 				<?php
 				$table->views();
 				$table->search_box( __( 'Search pages', 'seo-health-check' ), 'shc-search' );
+				$table->display();
+				?>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Summary cards, with the change since the previous scan when there is one to compare with.
+	 *
+	 * @param array      $summary  Current totals.
+	 * @param array|null $previous Snapshot of the scan before the most recent one.
+	 */
+	private static function render_cards( array $summary, $previous ) {
+		?>
+		<div class="shc-cards">
+			<div class="shc-card">
+				<span class="shc-card__value"><?php echo wp_kses_post( self::score_badge( $summary['score'] ) ); ?></span>
+				<span class="shc-card__label">
+					<?php esc_html_e( 'Average score', 'seo-health-check' ); ?>
+					<?php if ( $previous ) : ?>
+						<?php echo wp_kses_post( self::delta_badge( $summary['score'], $previous['score'], false ) ); ?>
+					<?php endif; ?>
+				</span>
+			</div>
+			<div class="shc-card">
+				<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['issues'] ) ); ?></span>
+				<span class="shc-card__label">
+					<?php esc_html_e( 'Issues', 'seo-health-check' ); ?>
+					<?php if ( $previous ) : ?>
+						<?php echo wp_kses_post( self::delta_badge( $summary['issues'], $previous['issues'] ) ); ?>
+					<?php endif; ?>
+				</span>
+			</div>
+			<div class="shc-card">
+				<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['pages_with_issues'] ) ); ?></span>
+				<span class="shc-card__label">
+					<?php esc_html_e( 'Pages with issues', 'seo-health-check' ); ?>
+					<?php if ( $previous ) : ?>
+						<?php echo wp_kses_post( self::delta_badge( $summary['pages_with_issues'], $previous['pages_with_issues'] ) ); ?>
+					<?php endif; ?>
+				</span>
+			</div>
+			<div class="shc-card">
+				<span class="shc-card__value"><?php echo esc_html( number_format_i18n( $summary['pages'] ) ); ?></span>
+				<span class="shc-card__label">
+					<?php esc_html_e( 'Pages scanned', 'seo-health-check' ); ?>
+					<span class="shc-delta shc-delta--same"><?php echo esc_html( SEOHC_SEO_Meta::provider_label() ); ?></span>
+				</span>
+			</div>
+		</div>
+		<?php if ( ! $previous ) : ?>
+			<p class="description"><?php esc_html_e( 'After the next scan you will also see what changed since this one.', 'seo-health-check' ); ?></p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * Renders the page scores overview.
+	 */
+	public static function render_pages() {
+		self::require_capability();
+
+		$filters = self::current_page_filters();
+		$summary = SEOHC_Repository::summary();
+		$table   = new SEOHC_Pages_List_Table( $filters );
+		$table->prepare_items();
+		?>
+		<div class="wrap shc-wrap">
+			<h1><?php esc_html_e( 'Page scores', 'seo-health-check' ); ?></h1>
+			<p>
+				<?php esc_html_e( 'Every scanned page scores from 0 to 100. Each kind of problem costs points, errors twice as much as warnings, and repeats of the same problem a little extra.', 'seo-health-check' ); ?>
+				<?php
+				printf(
+					/* translators: %s: average score. */
+					esc_html__( 'The average for this site is %s.', 'seo-health-check' ),
+					wp_kses_post( self::score_badge( $summary['score'] ) )
+				);
+				?>
+			</p>
+
+			<form method="get">
+				<input type="hidden" name="page" value="<?php echo esc_attr( self::PAGES_SLUG ); ?>">
+				<?php if ( $filters['band'] ) : ?>
+					<input type="hidden" name="band" value="<?php echo esc_attr( $filters['band'] ); ?>">
+				<?php endif; ?>
+				<?php
+				$table->views();
+				$table->search_box( __( 'Search pages', 'seo-health-check' ), 'seohc-pages-search' );
 				$table->display();
 				?>
 			</form>
