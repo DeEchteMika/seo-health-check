@@ -60,9 +60,9 @@ git archive --format=zip --prefix=seo-health-check/ -o seo-health-check.zip HEAD
 | `includes/admin/class-seohc-pages-list-table.php` | The page scores overview (`WP_List_Table`) |
 | `includes/admin/class-seohc-scans-page.php` | The scan history screen |
 | `includes/admin/class-seohc-dashboard-widget.php` | The widget on the wp-admin home screen |
-| `languages/` | Translations (`nl_NL` included) |
 | `includes/admin/class-seohc-inline-edit.php` | Saving alt texts, titles and descriptions from the overview |
 | `includes/admin/class-seohc-admin.php` | Menus, screens, form handlers and the progress endpoint |
+| `languages/` | Translations (`nl_NL` included) |
 
 ### Hooks for developers
 
