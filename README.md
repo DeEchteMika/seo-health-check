@@ -2,7 +2,7 @@
 
 A WordPress plugin that scans posts and pages for common on-page SEO problems and shows them in the dashboard:
 
-- missing, too long or duplicate **titles** and **meta descriptions** (read from Yoast SEO or Rank Math)
+- missing, too long or duplicate **titles** and **meta descriptions** (read from **Yoast SEO** or **Rank Math**)
 - **images without alt text**
 - **missing or multiple H1** headings
 - **thin content** (below a word count you choose)
