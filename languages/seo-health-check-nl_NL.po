@@ -323,7 +323,7 @@ msgid "Describe what the image shows. Leave empty only for decoration."
 msgstr "Beschrijf wat er op de afbeelding staat. Laat alleen leeg bij versiering."
 
 #: includes/admin/class-seohc-issues-list-table.php:61
-#: includes/class-seohc-csv-exporter.php:65
+#: includes/class-seohc-csv-exporter.php:85
 #: includes/class-seohc-launch-checks.php:208
 msgid "Details"
 msgstr "Details"
@@ -358,7 +358,7 @@ msgstr "Bewerken"
 msgid "Edit %s"
 msgstr "%s bewerken"
 
-#: includes/class-seohc-csv-exporter.php:62
+#: includes/class-seohc-csv-exporter.php:82
 msgid "Edit link"
 msgstr "Bewerklink"
 
@@ -429,7 +429,7 @@ msgstr "Afgerond"
 #: includes/admin/class-seohc-dashboard-widget.php:109
 #: includes/admin/class-seohc-issues-list-table.php:279
 #: includes/admin/class-seohc-scans-page.php:65
-#: includes/class-seohc-csv-exporter.php:108
+#: includes/class-seohc-csv-exporter.php:122
 msgid "Fixed"
 msgstr "Opgelost"
 
@@ -465,7 +465,7 @@ msgstr "Er is code van Google Analytics of Tag Manager gevonden."
 msgid "Heading level skipped"
 msgstr "Kopniveau overgeslagen"
 
-#: includes/class-seohc-schedule.php:351
+#: includes/class-seohc-schedule.php:353
 msgid "How many reports to keep on the site, so you can look back at them. Older ones are deleted. Use 0 to keep none; the report is then only emailed."
 msgstr "Hoeveel rapporten er op de site bewaard blijven, zodat je kunt terugkijken. Oudere worden verwijderd. Gebruik 0 om er geen te bewaren; het rapport wordt dan alleen gemaild."
 
@@ -509,7 +509,7 @@ msgstr "Info"
 
 #: includes/admin/class-seohc-issues-list-table.php:60
 #: includes/admin/class-seohc-scans-page.php:146
-#: includes/class-seohc-csv-exporter.php:63
+#: includes/class-seohc-csv-exporter.php:83
 msgid "Issue"
 msgstr "Probleem"
 
@@ -622,7 +622,7 @@ msgstr "Kan beter"
 #: includes/admin/class-seohc-dashboard-widget.php:105
 #: includes/admin/class-seohc-issues-list-table.php:287
 #: includes/admin/class-seohc-scans-page.php:64
-#: includes/class-seohc-csv-exporter.php:112
+#: includes/class-seohc-csv-exporter.php:126
 msgid "New"
 msgstr "Nieuw"
 
@@ -756,7 +756,7 @@ msgstr "Aantal berichten dat per stap op de achtergrond wordt gescand. Zet dit l
 msgid "OK"
 msgstr "OK"
 
-#: includes/class-seohc-schedule.php:339
+#: includes/class-seohc-schedule.php:341
 msgid "One or more addresses, separated by commas."
 msgstr "Eén of meer adressen, gescheiden door komma’s."
 
@@ -828,11 +828,11 @@ msgstr "Slecht"
 msgid "Post content only (fastest)"
 msgstr "Alleen de berichtinhoud (snelst)"
 
-#: includes/class-seohc-csv-exporter.php:58
+#: includes/class-seohc-csv-exporter.php:78
 msgid "Post ID"
 msgstr "Bericht-ID"
 
-#: includes/class-seohc-csv-exporter.php:60
+#: includes/class-seohc-csv-exporter.php:80
 msgid "Post type"
 msgstr "Berichttype"
 
@@ -935,7 +935,7 @@ msgstr "De site automatisch scannen en daarna een rapport sturen"
 msgid "Scanned"
 msgstr "Gescand"
 
-#: includes/class-seohc-csv-exporter.php:67
+#: includes/class-seohc-csv-exporter.php:87
 msgid "Scanned at (UTC)"
 msgstr "Gescand op (UTC)"
 
@@ -1016,7 +1016,7 @@ msgid "Settings"
 msgstr "Instellingen"
 
 #: includes/admin/class-seohc-issues-list-table.php:62
-#: includes/class-seohc-csv-exporter.php:64
+#: includes/class-seohc-csv-exporter.php:84
 msgid "Severity"
 msgstr "Ernst"
 
@@ -1072,7 +1072,7 @@ msgid "Start full scan"
 msgstr "Volledige scan starten"
 
 #: includes/admin/class-seohc-issues-list-table.php:64
-#: includes/class-seohc-csv-exporter.php:66
+#: includes/class-seohc-csv-exporter.php:86
 #: includes/class-seohc-launch-checks.php:207
 msgid "Status"
 msgstr "Status"
@@ -1259,7 +1259,7 @@ msgstr "Deze site draait zelf op %s, dus deze controle is pas zinvol op de live 
 msgid "Time"
 msgstr "Tijdstip"
 
-#: includes/class-seohc-csv-exporter.php:59
+#: includes/class-seohc-csv-exporter.php:79
 msgid "Title"
 msgstr "Titel"
 
@@ -1282,7 +1282,7 @@ msgstr "Type"
 
 #: includes/admin/class-seohc-issues-list-table.php:181
 #: includes/admin/class-seohc-issues-list-table.php:290
-#: includes/class-seohc-csv-exporter.php:115
+#: includes/class-seohc-csv-exporter.php:129
 msgid "Unchanged"
 msgstr "Onveranderd"
 
@@ -1309,7 +1309,7 @@ msgstr "Onbekende URL’s geven status 404. Controleer zelf nog hoe die pagina e
 msgid "Updates available: WordPress %1$d, plugins %2$d, themes %3$d."
 msgstr "Updates beschikbaar: WordPress %1$d, plugins %2$d, thema’s %3$d."
 
-#: includes/class-seohc-csv-exporter.php:61
+#: includes/class-seohc-csv-exporter.php:81
 msgid "URL"
 msgstr "URL"
 
@@ -1390,3 +1390,7 @@ msgstr "Je mag deze afbeelding niet bewerken."
 #: includes/admin/class-seohc-inline-edit.php:312
 msgid "You may not edit this page."
 msgstr "Je mag deze pagina niet bewerken."
+
+#: includes/class-seohc-schedule.php:340
+msgid "you@example.com"
+msgstr "naam@example.com"

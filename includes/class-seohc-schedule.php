@@ -335,7 +335,9 @@ class SEOHC_Schedule {
 			'<input type="text" class="regular-text" name="%1$s[email]" value="%2$s" placeholder="%3$s"><p class="description">%4$s</p>',
 			esc_attr( self::OPTION ),
 			esc_attr( (string) self::get( 'email' ) ),
-			esc_attr( get_option( 'admin_email' ) ),
+			// A reserved example domain (RFC 2606), never the address of the administrator: a hint
+			// is not worth putting a real mailbox in front of whoever opens this screen.
+			esc_attr__( 'you@example.com', 'seo-health-check' ),
 			esc_html__( 'One or more addresses, separated by commas.', 'seo-health-check' )
 		);
 	}
