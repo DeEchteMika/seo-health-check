@@ -16,6 +16,7 @@ function seohc_uninstall_site() {
 	// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- removing the plugin's own tables.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}seohc_issues" );
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}seohc_pages" );
+	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}seohc_links" );
 
 	// Link check cache.
 	$wpdb->query(

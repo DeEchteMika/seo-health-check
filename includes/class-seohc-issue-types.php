@@ -50,12 +50,20 @@ class SEOHC_Issue_Types {
 				'label'    => __( 'Image without alt text', 'seo-health-check' ),
 				'severity' => self::SEVERITY_WARNING,
 			),
+			'image_too_large'       => array(
+				'label'    => __( 'Image file too large', 'seo-health-check' ),
+				'severity' => self::SEVERITY_WARNING,
+			),
 			'h1_missing'            => array(
 				'label'    => __( 'Missing H1', 'seo-health-check' ),
 				'severity' => self::SEVERITY_ERROR,
 			),
 			'h1_multiple'           => array(
 				'label'    => __( 'Multiple H1s', 'seo-health-check' ),
+				'severity' => self::SEVERITY_WARNING,
+			),
+			'heading_skip'          => array(
+				'label'    => __( 'Heading level skipped', 'seo-health-check' ),
 				'severity' => self::SEVERITY_WARNING,
 			),
 			'thin_content'          => array(
@@ -65,6 +73,10 @@ class SEOHC_Issue_Types {
 			'broken_internal_link'  => array(
 				'label'    => __( 'Broken internal link', 'seo-health-check' ),
 				'severity' => self::SEVERITY_ERROR,
+			),
+			'no_incoming_links'     => array(
+				'label'    => __( 'No links to this page', 'seo-health-check' ),
+				'severity' => self::SEVERITY_WARNING,
 			),
 			'rendered_fetch_failed' => array(
 				'label'    => __( 'Page could not be loaded', 'seo-health-check' ),

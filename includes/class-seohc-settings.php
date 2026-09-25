@@ -27,6 +27,8 @@ class SEOHC_Settings {
 			'min_words'              => 300,
 			'max_title_length'       => 60,
 			'max_description_length' => 160,
+			'max_image_kb'           => 0,
+			'check_orphans'          => 1,
 			'content_source'         => 'auto',
 			'theme_outputs_h1'       => 1,
 			'batch_size'             => 20,
@@ -151,6 +153,22 @@ class SEOHC_Settings {
 		);
 
 		add_settings_field(
+			'max_image_kb',
+			__( 'Maximum image size', 'seo-health-check' ),
+			array( __CLASS__, 'field_number' ),
+			self::PAGE_SLUG,
+			'seohc_rules',
+			array(
+				'key'         => 'max_image_kb',
+				'min'         => 0,
+				'max'         => 20000,
+				'label_for'   => 'seohc_max_image_kb',
+				'description' => __( 'In KB. Images in your uploads folder above this size are reported, 300 is a sensible start. Use 0 to disable this check, which is how it starts out: on a site with many photos it can report a lot at once.', 'seo-health-check' ),
+			)
+		);
+		add_settings_field( 'check_orphans', __( 'Pages without links', 'seo-health-check' ), array( __CLASS__, 'field_check_orphans' ), self::PAGE_SLUG, 'seohc_rules' );
+
+		add_settings_field(
 			'batch_size',
 			__( 'Batch size', 'seo-health-check' ),
 			array( __CLASS__, 'field_number' ),
@@ -221,6 +239,7 @@ class SEOHC_Settings {
 			'min_words'              => array( 0, 10000 ),
 			'max_title_length'       => array( 10, 200 ),
 			'max_description_length' => array( 50, 500 ),
+			'max_image_kb'           => array( 0, 20000 ),
 			'batch_size'             => array( 1, 200 ),
 		);
 		foreach ( $ranges as $key => $range ) {
@@ -231,6 +250,7 @@ class SEOHC_Settings {
 		$source                  = isset( $input['content_source'] ) ? sanitize_key( $input['content_source'] ) : '';
 		$clean['content_source'] = array_key_exists( $source, self::content_sources() ) ? $source : $defaults['content_source'];
 
+		$clean['check_orphans']    = empty( $input['check_orphans'] ) ? 0 : 1;
 		$clean['theme_outputs_h1'] = empty( $input['theme_outputs_h1'] ) ? 0 : 1;
 		$clean['rescan_on_save']   = empty( $input['rescan_on_save'] ) ? 0 : 1;
 
@@ -251,6 +271,19 @@ class SEOHC_Settings {
 		$clean['dev_domains'] = implode( ', ', array_unique( $domains ) );
 
 		return $clean;
+	}
+
+	/**
+	 * Orphan page checkbox.
+	 */
+	public static function field_check_orphans() {
+		printf(
+			'<label><input type="checkbox" name="%1$s[check_orphans]" value="1" %2$s> %3$s</label><p class="description">%4$s</p>',
+			esc_attr( self::OPTION ),
+			checked( (int) self::get( 'check_orphans' ), 1, false ),
+			esc_html__( 'Report pages that nothing links to', 'seo-health-check' ),
+			esc_html__( 'Counts links from the content of other pages and from your menus. Links in a sidebar, a footer or a widget are not scanned, so a page only reachable from there is reported as well. Blog posts that are only listed on an archive page count as unlinked too.', 'seo-health-check' )
+		);
 	}
 
 	/**

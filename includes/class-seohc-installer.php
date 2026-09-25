@@ -65,6 +65,7 @@ class SEOHC_Installer {
 		$charset_collate = $wpdb->get_charset_collate();
 		$issues_table    = SEOHC_Repository::issues_table();
 		$pages_table     = SEOHC_Repository::pages_table();
+		$links_table     = SEOHC_Repository::links_table();
 
 		// One row per issue found. Rows stay behind with a resolved_at date once the problem is
 		// gone, so the overview can show what the last scan fixed. Indexed on the columns the
@@ -105,6 +106,16 @@ class SEOHC_Installer {
 				KEY title_hash (title_hash),
 				KEY description_hash (description_hash),
 				KEY score (score)
+			) {$charset_collate};"
+		);
+
+		// One row per internal link between two posts, used to find pages nothing links to.
+		dbDelta(
+			"CREATE TABLE {$links_table} (
+				from_post_id bigint(20) unsigned NOT NULL,
+				to_post_id bigint(20) unsigned NOT NULL,
+				PRIMARY KEY  (from_post_id,to_post_id),
+				KEY to_post_id (to_post_id)
 			) {$charset_collate};"
 		);
 

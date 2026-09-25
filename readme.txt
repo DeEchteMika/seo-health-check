@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,9 +19,12 @@ SEO Health Check scans every post and page on your site for the on-page SEO prob
 * **Title**: missing, too long, or used by more than one page.
 * **Meta description**: missing, too long, or used by more than one page.
 * **Images** without alt text, including the featured image.
+* **Image files** bigger than the maximum you set (off until you fill one in).
 * **H1 headings**: missing, or more than one.
+* **Heading order**: a level that is skipped, such as an H2 followed by an H4.
 * **Thin content**: fewer words than the minimum you set.
 * **Broken internal links**: links to pages that do not exist (anymore), are in the trash, or are still a draft.
+* **Pages nothing links to**: no other page and no menu points at them.
 
 Titles and meta descriptions are read from **Yoast SEO** or **Rank Math** when one of them is active, including their templates and variables. Without an SEO plugin, the WordPress defaults are used.
 
@@ -40,6 +43,10 @@ A separate **Scans** screen keeps the last twenty finished scans: when each one 
 **Fix things without leaving the overview**
 
 Alt texts, SEO titles and meta descriptions can be typed straight into the results list, with a character counter. The page is rescanned the moment you save, so the row updates itself. Problems that live inside the page content, such as headings and broken links, still link through to the edit screen.
+
+**On your dashboard**
+
+A widget on the wp-admin home screen shows the average score, the number of issues, what the last scan added and solved, and a link to each screen. No need to go looking for the results.
 
 **Launch checks**
 
@@ -60,7 +67,7 @@ Page builders such as Oxygen, Breakdance and Elementor store their layout outsid
 * Export the (filtered) results as CSV, ready for Excel.
 * Posts are rescanned automatically in the background when you save them.
 * Removes all of its data when you delete the plugin.
-* Translation ready.
+* Translation ready, with a Dutch translation included.
 
 == Installation ==
 
@@ -106,6 +113,16 @@ Scanning never changes anything: it reads your content and stores its findings i
 
 The one exception is when you fix something yourself from the overview. Saving a meta description or SEO title writes that single field in Yoast SEO or Rank Math. Saving an alt text stores it on the image in the media library and, when that image is embedded in the page, sets the alt attribute of that one image tag. Nothing else in the page is touched.
 
+= A page is reported as having no links, but it is in my footer. =
+
+The scan reads the content of your pages and the items in your WordPress menus. It deliberately skips the site header, footer, sidebar and navigation, because otherwise every page would look linked from everywhere. A page that is only reachable from a widget or a footer built in a page builder is therefore reported.
+
+Blog posts that are only listed on an archive page count as unlinked too. That is a real finding for SEO, but noisy on a blog. Switch the check off under **Settings > Pages without links**, or use the `seo_health_check_linked_post_ids` filter to add the posts you want treated as linked.
+
+= Why does the image size check report nothing? =
+
+It is off until you fill in a maximum under **Settings > Maximum image size**; 300 KB is a sensible start. Only images inside your own uploads folder can be measured, because their file is read from disk. Images served from a CDN or another site are skipped rather than downloaded.
+
 = Who can see the results? =
 
 Administrators (users with the `manage_options` capability). Developers can change this with the `seo_health_check_capability` filter.
@@ -139,6 +156,14 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.4.0 =
+* New check: heading levels that skip a step, for example an H2 followed by an H4.
+* New check: image files larger than a maximum you set. Off until you fill one in.
+* New check: pages that no other page and no menu links to.
+* New: a dashboard widget with the main numbers on the wp-admin home screen.
+* New: Dutch translation (nl_NL).
+* Internal links between posts are stored in a third table, which is removed again when the plugin is deleted.
 
 = 0.3.0 =
 * New: every issue is marked New, Unchanged or Fixed, with a status filter in the overview.

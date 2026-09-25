@@ -234,6 +234,53 @@
 	color: #50575e;
 }
 
+/* The widget on the dashboard. */
+.seohc-widget p {
+	margin: 0 0 10px;
+}
+
+.seohc-widget__score {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.seohc-widget__score .seohc-score {
+	font-size: 22px;
+	padding: 2px 10px;
+}
+
+.seohc-widget__label {
+	color: #50575e;
+}
+
+.seohc-widget__changes {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 14px;
+}
+
+.seohc-widget__changes a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	text-decoration: none;
+	font-variant-numeric: tabular-nums;
+}
+
+.seohc-widget__note {
+	color: #50575e;
+	font-size: 12px;
+}
+
+.seohc-widget__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 0;
+}
+
 /* Scan history. */
 .seohc-intro {
 	max-width: 46em;

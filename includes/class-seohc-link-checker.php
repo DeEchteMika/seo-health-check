@@ -17,7 +17,7 @@ class SEOHC_Link_Checker {
 	/**
 	 * Results cache for the current request.
 	 *
-	 * @var array<string, string>
+	 * @var array<string, array{reason: string, post_id: int}>
 	 */
 	private static $cache = array();
 
@@ -29,25 +29,56 @@ class SEOHC_Link_Checker {
 	 * @return string|null Reason the link is broken, or null when it is fine or not internal.
 	 */
 	public static function check( $href, $base_url ) {
+		$result = self::inspect( $href, $base_url );
+		return $result['reason'];
+	}
+
+	/**
+	 * Checks one link and works out which post it points at.
+	 *
+	 * The post ID is what tells the scan which pages link to which, so pages nothing links to
+	 * can be found once the whole site has been scanned.
+	 *
+	 * @param string $href     Raw href attribute.
+	 * @param string $base_url URL of the page containing the link (for relative links).
+	 * @return array{reason: string|null, post_id: int} Reason is null when the link is fine or
+	 *                                                  not internal; post_id is 0 when the link
+	 *                                                  does not point at a post or page.
+	 */
+	public static function inspect( $href, $base_url ) {
+		$none = array(
+			'reason'  => null,
+			'post_id' => 0,
+		);
+
 		$url = self::normalize( $href, $base_url );
 		if ( null === $url ) {
-			return null;
+			return $none;
 		}
 
-		if ( array_key_exists( $url, self::$cache ) ) {
-			return '' === self::$cache[ $url ] ? null : self::$cache[ $url ];
+		if ( ! array_key_exists( $url, self::$cache ) ) {
+			// The generation changes with every full scan, so each scan starts with an empty cache.
+			$transient = 'seohc_link_' . md5( (int) get_option( self::GENERATION_KEY, 0 ) . '|' . $url );
+			$cached    = get_transient( $transient );
+
+			if ( ! is_array( $cached ) ) {
+				$post_id = (int) url_to_postid( $url );
+				$cached  = array(
+					'reason'  => (string) self::resolve( $url, $post_id ),
+					'post_id' => $post_id,
+				);
+				set_transient( $transient, $cached, HOUR_IN_SECONDS );
+			}
+
+			self::$cache[ $url ] = $cached;
 		}
 
-		// The generation changes with every full scan, so each scan starts with an empty cache.
-		$transient = 'seohc_link_' . md5( (int) get_option( self::GENERATION_KEY, 0 ) . '|' . $url );
-		$cached    = get_transient( $transient );
-		if ( false === $cached ) {
-			$cached = (string) self::resolve( $url );
-			set_transient( $transient, $cached, HOUR_IN_SECONDS );
-		}
+		$entry = self::$cache[ $url ];
 
-		self::$cache[ $url ] = $cached;
-		return '' === $cached ? null : $cached;
+		return array(
+			'reason'  => '' === $entry['reason'] ? null : $entry['reason'],
+			'post_id' => (int) $entry['post_id'],
+		);
 	}
 
 	/**
@@ -89,10 +120,12 @@ class SEOHC_Link_Checker {
 	/**
 	 * Works out whether an internal URL resolves.
 	 *
-	 * @param string $url Absolute internal URL.
+	 * @param string $url     Absolute internal URL.
+	 * @param int    $post_id Post the URL points at, 0 when it points at none. Worked out by
+	 *                        the caller, which needs it anyway.
 	 * @return string Empty when fine, otherwise the reason.
 	 */
-	private static function resolve( $url ) {
+	private static function resolve( $url, $post_id = 0 ) {
 		// Files in the uploads folder: check the disk instead of making a request.
 		$uploads = wp_get_upload_dir();
 		if ( 0 === strpos( self::strip_scheme( $url ), self::strip_scheme( $uploads['baseurl'] ) ) ) {
@@ -101,7 +134,6 @@ class SEOHC_Link_Checker {
 		}
 
 		// Posts and pages: ask WordPress, which is much faster than an HTTP request.
-		$post_id = url_to_postid( $url );
 		if ( $post_id ) {
 			$status = get_post_status( $post_id );
 			if ( in_array( $status, array( 'publish', 'inherit' ), true ) ) {

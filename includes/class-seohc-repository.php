@@ -43,9 +43,12 @@ class SEOHC_Repository {
 
 	/**
 	 * Issue types that compare pages with each other, so they are decided after the whole scan
-	 * by flag_duplicates() instead of by the per-page scanner.
+	 * instead of by the per-page scanner: flag_duplicates() owns the first two,
+	 * flag_orphans() the last one.
 	 */
-	const CROSS_PAGE_TYPES = array( 'title_duplicate', 'description_duplicate' );
+	const DUPLICATE_TYPES  = array( 'title_duplicate', 'description_duplicate' );
+	const ORPHAN_TYPE      = 'no_incoming_links';
+	const CROSS_PAGE_TYPES = array( 'title_duplicate', 'description_duplicate', 'no_incoming_links' );
 
 	/**
 	 * Columns the issues overview may sort on, mapped to SQL expressions.
@@ -93,6 +96,30 @@ class SEOHC_Repository {
 	}
 
 	/**
+	 * Internal links table name.
+	 *
+	 * @return string
+	 */
+	public static function links_table() {
+		global $wpdb;
+		return $wpdb->prefix . 'seohc_links';
+	}
+
+	/**
+	 * Prepared value list for an IN clause, built from an issue type list.
+	 *
+	 * @param string[] $types Issue types.
+	 * @return string
+	 */
+	private static function type_list( array $types ) {
+		global $wpdb;
+
+		$placeholders = implode( ', ', array_fill( 0, count( $types ), '%s' ) );
+
+		return $wpdb->prepare( "({$placeholders})", $types ); // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- a value list, not a whole query.
+	}
+
+	/**
 	 * Replaces all stored results for one post.
 	 *
 	 * Issues that are found again keep the date they were first seen, issues that have
@@ -111,11 +138,10 @@ class SEOHC_Repository {
 		$now     = current_time( 'mysql', true );
 		$table   = self::issues_table();
 
-		// Duplicate titles and descriptions are decided across all pages once the scan is done,
-		// so flag_duplicates() owns those rows and this method leaves them alone.
-		$placeholders = implode( ', ', array_fill( 0, count( self::CROSS_PAGE_TYPES ), '%s' ) );
-		$scope        = array_merge( array( $post_id ), self::CROSS_PAGE_TYPES );
-		$since        = self::scan_started_at();
+		// Duplicates and orphans are decided across all pages once the scan is done, so
+		// flag_duplicates() and flag_orphans() own those rows and this method leaves them alone.
+		$own   = 'issue_type NOT IN ' . self::type_list( self::CROSS_PAGE_TYPES );
+		$since = self::scan_started_at();
 
 		// Fixes belong to one scan. Everything this page had repaired before the current scan
 		// began has been reported, so it goes; fixes made since then add up, which is what
@@ -123,19 +149,17 @@ class SEOHC_Repository {
 		if ( '' !== $since ) {
 			$wpdb->query(
 				$wpdb->prepare(
-					"DELETE FROM {$table} WHERE post_id = %d AND resolved_at < %s AND issue_type NOT IN (%s, %s)",
+					"DELETE FROM {$table} WHERE post_id = %d AND resolved_at < %s AND {$own}",
 					$post_id,
-					$since,
-					self::CROSS_PAGE_TYPES[0],
-					self::CROSS_PAGE_TYPES[1]
+					$since
 				)
 			);
 		}
 
 		$open = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT id, issue_type, object_id, details FROM {$table} WHERE post_id = %d AND resolved_at IS NULL AND issue_type NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are generated from the type list above.
-				$scope
+				"SELECT id, issue_type, object_id, details FROM {$table} WHERE post_id = %d AND resolved_at IS NULL AND {$own}",
+				$post_id
 			)
 		);
 
@@ -197,6 +221,39 @@ class SEOHC_Repository {
 	}
 
 	/**
+	 * Stores which posts a page links to, so pages nothing links to can be found after a scan.
+	 *
+	 * Links a page makes to itself are dropped: they say nothing about whether anyone else
+	 * can find the page.
+	 *
+	 * @param int   $post_id Post ID.
+	 * @param int[] $targets IDs of the posts the page links to.
+	 */
+	public static function save_post_links( $post_id, array $targets ) {
+		global $wpdb;
+
+		$post_id = (int) $post_id;
+		$links   = self::links_table();
+
+		$wpdb->delete( $links, array( 'from_post_id' => $post_id ), array( '%d' ) );
+
+		foreach ( array_unique( array_map( 'intval', $targets ) ) as $target ) {
+			if ( $target <= 0 || $target === $post_id ) {
+				continue;
+			}
+
+			$wpdb->insert(
+				$links,
+				array(
+					'from_post_id' => $post_id,
+					'to_post_id'   => $target,
+				),
+				array( '%d', '%d' )
+			);
+		}
+	}
+
+	/**
 	 * Removes all results for one post.
 	 *
 	 * @param int $post_id Post ID.
@@ -205,6 +262,8 @@ class SEOHC_Repository {
 		global $wpdb;
 		$wpdb->delete( self::issues_table(), array( 'post_id' => $post_id ), array( '%d' ) );
 		$wpdb->delete( self::pages_table(), array( 'post_id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( self::links_table(), array( 'from_post_id' => $post_id ), array( '%d' ) );
+		$wpdb->delete( self::links_table(), array( 'to_post_id' => $post_id ), array( '%d' ) );
 	}
 
 	/**
@@ -218,8 +277,11 @@ class SEOHC_Repository {
 		$issues = self::issues_table();
 		$pages  = self::pages_table();
 
+		$links = self::links_table();
+
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$pages} WHERE scanned_at < %s", $since ) );
 		$wpdb->query( "DELETE FROM {$issues} WHERE post_id NOT IN (SELECT post_id FROM {$pages})" );
+		$wpdb->query( "DELETE FROM {$links} WHERE from_post_id NOT IN (SELECT post_id FROM {$pages})" );
 	}
 
 	/**
@@ -236,28 +298,17 @@ class SEOHC_Repository {
 		);
 
 		// A fix belongs to one scan, so duplicates repaired before this scan started are dropped.
+		$mine  = 'issue_type IN ' . self::type_list( self::DUPLICATE_TYPES );
 		$since = self::scan_started_at();
+
 		if ( '' !== $since ) {
-			$wpdb->query(
-				$wpdb->prepare(
-					"DELETE FROM {$issues} WHERE resolved_at < %s AND issue_type IN (%s, %s)",
-					$since,
-					self::CROSS_PAGE_TYPES[0],
-					self::CROSS_PAGE_TYPES[1]
-				)
-			);
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$issues} WHERE resolved_at < %s AND {$mine}", $since ) );
 		}
 
 		// Duplicates are recalculated from scratch every time, so remember which rows are
 		// already open: those keep their id and the date they were first reported.
 		$open = array();
-		$rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT id, post_id, issue_type FROM {$issues} WHERE resolved_at IS NULL AND issue_type IN (%s, %s)",
-				self::CROSS_PAGE_TYPES[0],
-				self::CROSS_PAGE_TYPES[1]
-			)
-		);
+		$rows = $wpdb->get_results( "SELECT id, post_id, issue_type FROM {$issues} WHERE resolved_at IS NULL AND {$mine}" );
 		foreach ( $rows as $row ) {
 			$open[ $row->issue_type ][ (int) $row->post_id ] = (int) $row->id;
 		}
@@ -324,9 +375,129 @@ class SEOHC_Repository {
 		}
 
 		self::resolve_issues( $gone, $now );
+		self::refresh_issue_counts();
+		self::refresh_scores( $affected );
+	}
+
+	/**
+	 * Flags every scanned page that nothing links to.
+	 *
+	 * Only run at the end of a full scan: the link table is complete only then. After a single
+	 * rescan it holds one page's links, which would make the whole site look like orphans.
+	 *
+	 * Links are counted from the scanned content of other pages plus the WordPress menus. The
+	 * site header, footer and sidebar are deliberately left out of a scan, so without the menus
+	 * every page in the main navigation would be reported.
+	 */
+	public static function flag_orphans() {
+		global $wpdb;
+
+		$issues = self::issues_table();
+		$pages  = self::pages_table();
+		$links  = self::links_table();
+		$now    = current_time( 'mysql', true );
+		$type   = self::ORPHAN_TYPE;
+
+		$open = array();
+		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT id, post_id FROM {$issues} WHERE issue_type = %s AND resolved_at IS NULL", $type ) );
+		foreach ( $rows as $row ) {
+			$open[ (int) $row->post_id ] = (int) $row->id;
+		}
+
+		// Switched off: drop what the check reported earlier instead of calling it all solved.
+		if ( ! SEOHC_Settings::get( 'check_orphans' ) ) {
+			if ( ! empty( $open ) ) {
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$issues} WHERE issue_type = %s", $type ) );
+				self::refresh_issue_counts();
+				self::refresh_scores( array_keys( $open ) );
+			}
+			return;
+		}
+
+		$since = self::scan_started_at();
+		if ( '' !== $since ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$issues} WHERE issue_type = %s AND resolved_at < %s", $type, $since ) );
+		}
+
+		$exempt = self::linked_without_a_link();
+		$filter = empty( $exempt ) ? '' : ' AND pg.post_id NOT IN (' . implode( ', ', $exempt ) . ')';
+
+		$orphans = array_map(
+			'intval',
+			(array) $wpdb->get_col( "SELECT pg.post_id FROM {$pages} pg WHERE pg.post_id NOT IN (SELECT to_post_id FROM {$links}){$filter}" )
+		);
+
+		$kept     = array();
+		$affected = array_keys( $open );
+
+		foreach ( $orphans as $post_id ) {
+			$affected[] = $post_id;
+
+			if ( isset( $open[ $post_id ] ) ) {
+				$kept[] = $open[ $post_id ];
+				continue;
+			}
+
+			$wpdb->insert(
+				$issues,
+				array(
+					'post_id'    => $post_id,
+					'issue_type' => $type,
+					'severity'   => SEOHC_Issue_Types::severity( $type ),
+					'details'    => __( 'No other page links to this one, and it is not in a menu.', 'seo-health-check' ),
+					'created_at' => $now,
+					'first_seen' => $now,
+				),
+				array( '%d', '%s', '%s', '%s', '%s', '%s' )
+			);
+		}
+
+		self::resolve_issues( array_diff( array_values( $open ), $kept ), $now );
+		self::refresh_issue_counts();
+		self::refresh_scores( $affected );
+	}
+
+	/**
+	 * Posts that count as linked even though a scan cannot see the link: everything in a
+	 * WordPress menu, plus the front page and the page that holds the blog.
+	 *
+	 * @return int[]
+	 */
+	private static function linked_without_a_link() {
+		$ids = array( (int) get_option( 'page_on_front' ), (int) get_option( 'page_for_posts' ) );
+
+		foreach ( (array) wp_get_nav_menus() as $menu ) {
+			foreach ( (array) wp_get_nav_menu_items( $menu->term_id ) as $item ) {
+				if ( 'post_type' === $item->type ) {
+					$ids[] = (int) $item->object_id;
+				} elseif ( 'custom' === $item->type ) {
+					$ids[] = (int) url_to_postid( $item->url );
+				}
+			}
+		}
+
+		/**
+		 * Filters the posts treated as linked without the scan finding a link to them.
+		 *
+		 * Useful for links a scan cannot see, such as those in a widget or a built footer.
+		 *
+		 * @param int[] $ids Post IDs.
+		 */
+		$ids = (array) apply_filters( 'seo_health_check_linked_post_ids', $ids );
+
+		return array_values( array_unique( array_filter( array_map( 'intval', $ids ) ) ) );
+	}
+
+	/**
+	 * Recounts the open issues per page.
+	 */
+	private static function refresh_issue_counts() {
+		global $wpdb;
+
+		$issues = self::issues_table();
+		$pages  = self::pages_table();
 
 		$wpdb->query( "UPDATE {$pages} SET issue_count = (SELECT COUNT(*) FROM {$issues} WHERE {$issues}.post_id = {$pages}.post_id AND {$issues}.resolved_at IS NULL)" );
-		self::refresh_scores( $affected );
 	}
 
 	/**

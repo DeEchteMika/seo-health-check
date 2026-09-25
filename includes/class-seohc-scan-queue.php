@@ -186,6 +186,9 @@ class SEOHC_Scan_Queue {
 		SEOHC_Repository::delete_stale( $state['started_at'] );
 		SEOHC_Repository::flag_duplicates();
 
+		// Only here: the link table is complete once every page has been scanned.
+		SEOHC_Repository::flag_orphans();
+
 		$state['status']        = 'done';
 		$state['finished_at']   = current_time( 'mysql', true );
 		$state['processed']     = max( (int) $state['processed'], (int) $state['total'] );

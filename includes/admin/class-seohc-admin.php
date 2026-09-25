@@ -35,6 +35,7 @@ class SEOHC_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		add_action( 'admin_init', array( 'SEOHC_Settings', 'register' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'wp_dashboard_setup', array( 'SEOHC_Dashboard_Widget', 'register' ) );
 
 		add_action( 'admin_post_seohc_start_scan', array( __CLASS__, 'handle_start_scan' ) );
 		add_action( 'admin_post_seohc_cancel_scan', array( __CLASS__, 'handle_cancel_scan' ) );
@@ -135,11 +136,19 @@ class SEOHC_Admin {
 	 * @param string $hook Current admin page hook.
 	 */
 	public static function enqueue_assets( $hook ) {
-		if ( ! in_array( $hook, self::$hooks, true ) ) {
+		$own = in_array( $hook, self::$hooks, true );
+
+		if ( ! $own && ! ( 'index.php' === $hook && current_user_can( SEOHC_Plugin::capability() ) ) ) {
 			return;
 		}
 
 		wp_enqueue_style( 'shc-admin', SEOHC_URL . 'assets/admin.css', array(), SEOHC_VERSION );
+
+		// The dashboard widget is a handful of numbers: it needs the styling, not the scripts.
+		if ( ! $own ) {
+			return;
+		}
+
 		wp_enqueue_script( 'shc-admin', SEOHC_URL . 'assets/admin.js', array(), SEOHC_VERSION, true );
 		wp_localize_script(
 			'shc-admin',

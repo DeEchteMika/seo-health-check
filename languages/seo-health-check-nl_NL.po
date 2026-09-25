@@ -1,0 +1,1179 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SEO Health Check 0.4.0\n"
+"Report-Msgid-Bugs-To: https://github.com/DeEchteMika/seo-health-check\n"
+"Language: nl_NL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: hand-written\n"
+
+#. translators: %s: credit text.
+#: includes/class-seohc-launch-checks.php:340
+msgid "\"%s\" was found on the homepage."
+msgstr "\"%s\" is gevonden op de homepage."
+
+#. translators: %s: credit text.
+#: includes/class-seohc-launch-checks.php:343
+msgid "\"%s\" was not found on the homepage."
+msgstr "\"%s\" is niet gevonden op de homepage."
+
+#: includes/class-seohc-launch-checks.php:474
+msgid "\"Discourage search engines from indexing this site\" is on (Settings > Reading). Correct on a staging site, but turn it off after launch."
+msgstr "\"Zoekmachines ontmoedigen deze site te indexeren\" staat aan (Instellingen > Lezen). Prima op een testsite, maar zet het uit na de livegang."
+
+#. translators: 1: length, 2: maximum length.
+#: includes/class-seohc-scanner.php:146
+msgid "%1$d characters (max %2$d)."
+msgstr "%1$d tekens (max %2$d)."
+
+#. translators: 1: length, 2: maximum length, 3: the title.
+#: includes/class-seohc-scanner.php:123
+msgid "%1$d characters (max %2$d): %3$s"
+msgstr "%1$d tekens (max %2$d): %3$s"
+
+#. translators: 1: characters used, 2: recommended maximum.
+#: includes/admin/class-seohc-admin.php:167
+msgid "%1$d of %2$d characters"
+msgstr "%1$d van %2$d tekens"
+
+#. translators: 1: word count, 2: minimum word count.
+#: includes/class-seohc-scanner.php:60
+msgid "%1$d words (minimum %2$d)."
+msgstr "%1$d woorden (minimaal %2$d)."
+
+#. translators: 1: domain, 2: number of posts, 3: number of meta fields.
+#: includes/class-seohc-launch-checks.php:426
+msgid "%1$s (%2$d posts, %3$d fields)"
+msgstr "%1$s (%2$d berichten, %3$d velden)"
+
+#. translators: 1: URL, 2: final URL.
+#: includes/class-seohc-launch-checks.php:533
+msgid "%1$s ends at %2$s"
+msgstr "%1$s eindigt op %2$s"
+
+#. translators: 1: file name, 2: size of the file, 3: maximum size.
+#: includes/class-seohc-scanner.php:209
+msgid "%1$s is %2$s (maximum %3$s)."
+msgstr "%1$s is %2$s (maximaal %3$s)."
+
+#. translators: 1: number of pages with issues, 2: number of pages scanned.
+#: includes/admin/class-seohc-dashboard-widget.php:65
+msgid "%1$s of %2$s pages need attention"
+msgstr "%1$s van %2$s pagina’s hebben aandacht nodig"
+
+#. translators: 1: processed posts, 2: total posts.
+#: includes/admin/class-seohc-admin.php:162
+#: includes/admin/class-seohc-admin.php:585
+msgid "%1$s of %2$s pages scanned"
+msgstr "%1$s van %2$s pagina’s gescand"
+
+#. translators: %d: number of H1 headings.
+#: includes/class-seohc-scanner.php:287
+msgid "%d H1 headings, including the post title shown by the theme."
+msgstr "%d H1-koppen, inclusief de berichttitel die het thema toont."
+
+#. translators: %d: number of H1 headings.
+#: includes/class-seohc-scanner.php:289
+msgid "%d H1 headings."
+msgstr "%d H1-koppen."
+
+#. translators: %d: number of further heading jumps on the same page.
+#: includes/class-seohc-scanner.php:344
+msgid "%d more jump further down."
+msgid_plural "%d more jumps further down."
+msgstr[0] "Nog %d sprong verderop."
+msgstr[1] "Nog %d sprongen verderop."
+
+#. translators: %s: URL.
+#: includes/class-seohc-launch-checks.php:527
+msgid "%s is not reachable"
+msgstr "%s is niet bereikbaar"
+
+#. translators: %s: number of issues.
+#: includes/admin/class-seohc-dashboard-widget.php:59
+msgid "%s issue"
+msgid_plural "%s issues"
+msgstr[0] "%s probleem"
+msgstr[1] "%s problemen"
+
+#. translators: %s: number of issues.
+#: includes/admin/class-seohc-admin.php:505
+msgid "%s issue appeared"
+msgid_plural "%s issues appeared"
+msgstr[0] "%s probleem erbij"
+msgstr[1] "%s problemen erbij"
+
+#. translators: %s: number of issues.
+#: includes/admin/class-seohc-admin.php:515
+msgid "%s issue was solved"
+msgid_plural "%s issues were solved"
+msgstr[0] "%s probleem opgelost"
+msgstr[1] "%s problemen opgelost"
+
+#. translators: %s: number of seconds.
+#: includes/admin/class-seohc-scans-page.php:209
+msgid "%s second"
+msgid_plural "%s seconds"
+msgstr[0] "%s seconde"
+msgstr[1] "%s seconden"
+
+#: includes/admin/class-seohc-admin.php:603
+msgid "(cancelled)"
+msgstr "(geannuleerd)"
+
+#: includes/class-seohc-scanner.php:170
+msgid "(image without source)"
+msgstr "(afbeelding zonder bron)"
+
+#: includes/admin/class-seohc-issues-list-table.php:198
+#: includes/admin/class-seohc-pages-list-table.php:197
+msgid "(no title)"
+msgstr "(geen titel)"
+
+#: includes/class-seohc-launch-checks.php:97
+msgid "404 page"
+msgstr "404-pagina"
+
+#: includes/admin/class-seohc-admin.php:368
+msgid "A scan is already running."
+msgstr "Er loopt al een scan."
+
+#: includes/class-seohc-launch-checks.php:273
+msgid "A site icon is set in WordPress."
+msgstr "Er is een site-icoon ingesteld in WordPress."
+
+#: includes/class-seohc-launch-checks.php:167
+msgid "Action needed"
+msgstr "Actie nodig"
+
+#: includes/admin/class-seohc-inline-edit.php:317
+msgid "Activate Yoast SEO or Rank Math to store this field."
+msgstr "Activeer Yoast SEO of Rank Math om dit veld op te slaan."
+
+#: includes/class-seohc-launch-checks.php:81
+msgid "After launch"
+msgstr "Na de livegang"
+
+#: includes/admin/class-seohc-admin.php:487
+msgid "After the next scan you will also see what changed since this one."
+msgstr "Na de volgende scan zie je hier ook wat er sinds deze scan is veranderd."
+
+#: includes/admin/class-seohc-issues-list-table.php:127
+#: includes/admin/class-seohc-pages-list-table.php:119
+msgid "All"
+msgstr "Alles"
+
+#: includes/admin/class-seohc-issues-list-table.php:179
+msgid "All open issues"
+msgstr "Alle open problemen"
+
+#: includes/admin/class-seohc-issues-list-table.php:161
+#: includes/admin/class-seohc-pages-list-table.php:150
+msgid "All post types"
+msgstr "Alle berichttypen"
+
+#: includes/admin/class-seohc-issues-list-table.php:172
+msgid "All severities"
+msgstr "Alle ernstniveaus"
+
+#. translators: %s: comma separated plugin names.
+#: includes/class-seohc-launch-checks.php:363
+msgid "All standard plugins are active. Check that they are configured."
+msgstr "Alle standaardplugins zijn actief. Controleer of ze ook zijn ingesteld."
+
+#. translators: %s: site address.
+#: includes/class-seohc-launch-checks.php:542
+msgid "All variants redirect to %s."
+msgstr "Alle varianten verwijzen door naar %s."
+
+#: includes/admin/class-seohc-inline-edit.php:81
+msgid "Alt text"
+msgstr "Alt-tekst"
+
+#: includes/class-seohc-settings.php:298
+msgid "Always use the rendered page (most accurate, slowest)"
+msgstr "Altijd de weergegeven pagina gebruiken (nauwkeurigst, langzaamst)"
+
+#. translators: 1: heading level before the jump, 2: heading level after it.
+#: includes/class-seohc-scanner.php:325
+msgid "An H%1$d is followed by an H%2$d."
+msgstr "Een H%1$d wordt gevolgd door een H%2$d."
+
+#: includes/class-seohc-launch-checks.php:80
+msgid "At launch"
+msgstr "Bij de livegang"
+
+#: includes/class-seohc-settings.php:296
+msgid "Automatic: use the rendered page when the post content is empty (page builders)"
+msgstr "Automatisch: de weergegeven pagina gebruiken als de berichtinhoud leeg is (paginabouwers)"
+
+#: includes/admin/class-seohc-admin.php:452
+#: includes/admin/class-seohc-dashboard-widget.php:48
+#: includes/admin/class-seohc-scans-page.php:62
+msgid "Average score"
+msgstr "Gemiddelde score"
+
+#: includes/class-seohc-settings.php:173
+msgid "Batch size"
+msgstr "Batchgrootte"
+
+#: includes/class-seohc-launch-checks.php:79
+msgid "Before launch"
+msgstr "Voor de livegang"
+
+#: includes/class-seohc-issue-types.php:74
+msgid "Broken internal link"
+msgstr "Kapotte interne link"
+
+#: includes/admin/class-seohc-issues-list-table.php:360
+msgid "Cancel"
+msgstr "Annuleren"
+
+#: includes/admin/class-seohc-admin.php:591
+msgid "Cancel scan"
+msgstr "Scan annuleren"
+
+#: includes/admin/class-seohc-pages-list-table.php:50
+#: includes/admin/class-seohc-scans-page.php:149
+msgid "Change"
+msgstr "Verschil"
+
+#: includes/class-seohc-launch-checks.php:166
+#: includes/class-seohc-launch-checks.php:206
+msgid "Check"
+msgstr "Controle"
+
+#: includes/class-seohc-settings.php:214
+msgid "Comma separated, for example \"staging.example.com, example.test\". After launch, content must not link to these domains anymore."
+msgstr "Gescheiden door komma’s, bijvoorbeeld \"staging.voorbeeld.nl, voorbeeld.test\". Na de livegang mag de content niet meer naar deze domeinen linken."
+
+#: includes/class-seohc-settings.php:109
+msgid "Content source"
+msgstr "Bron van de content"
+
+#. translators: %s: list of domains with counts.
+#: includes/class-seohc-launch-checks.php:432
+msgid "Content still refers to: %s. Use a search-replace plugin to update the URLs."
+msgstr "De content verwijst nog naar: %s. Gebruik een zoek-en-vervangplugin om de URL’s bij te werken."
+
+#: includes/class-seohc-settings.php:123
+msgid "Content with fewer words is reported as thin content. Use 0 to disable this check."
+msgstr "Content met minder woorden wordt gemeld als dunne content. Gebruik 0 om deze controle uit te zetten."
+
+#: includes/class-seohc-launch-checks.php:105
+msgid "Cookie notice"
+msgstr "Cookiemelding"
+
+#. translators: %s: plugin folder names.
+#: includes/class-seohc-launch-checks.php:462
+msgid "Cookie plugin active: %s"
+msgstr "Cookieplugin actief: %s"
+
+#: includes/admin/class-seohc-admin.php:165
+msgid "Could not save. Try again."
+msgstr "Opslaan is niet gelukt. Probeer het opnieuw."
+
+#: includes/class-seohc-settings.php:285
+msgid "Counts links from the content of other pages and from your menus. Links in a sidebar, a footer or a widget are not scanned, so a page only reachable from there is reported as well. Blog posts that are only listed on an archive page count as unlinked too."
+msgstr "Telt links uit de content van andere pagina’s en uit je menu’s. Links in een zijbalk, een footer of een widget worden niet gescand, dus een pagina die alleen daar staat wordt ook gemeld. Blogberichten die alleen op een archiefpagina staan tellen eveneens als niet gelinkt."
+
+#: includes/admin/class-seohc-inline-edit.php:82
+msgid "Describe what the image shows. Leave empty only for decoration."
+msgstr "Beschrijf wat er op de afbeelding staat. Laat alleen leeg bij versiering."
+
+#: includes/admin/class-seohc-issues-list-table.php:61
+#: includes/class-seohc-csv-exporter.php:53
+#: includes/class-seohc-launch-checks.php:208
+msgid "Details"
+msgstr "Details"
+
+#: includes/class-seohc-settings.php:207
+msgid "Development domains"
+msgstr "Ontwikkeldomeinen"
+
+#: includes/class-seohc-issue-types.php:46
+msgid "Duplicate meta description"
+msgstr "Dubbele meta description"
+
+#: includes/class-seohc-issue-types.php:34
+msgid "Duplicate title"
+msgstr "Dubbele titel"
+
+#: includes/admin/class-seohc-issues-list-table.php:202
+#: includes/admin/class-seohc-pages-list-table.php:215
+msgid "Edit"
+msgstr "Bewerken"
+
+#. translators: %s: field name, for example "Alt text".
+#: includes/admin/class-seohc-issues-list-table.php:355
+msgid "Edit %s"
+msgstr "%s bewerken"
+
+#: includes/class-seohc-csv-exporter.php:50
+msgid "Edit link"
+msgstr "Bewerklink"
+
+#: includes/admin/class-seohc-issues-list-table.php:246
+msgid "Error"
+msgstr "Fout"
+
+#: includes/admin/class-seohc-issues-list-table.php:173
+msgid "Errors"
+msgstr "Fouten"
+
+#: includes/admin/class-seohc-admin.php:542
+msgid "Every scanned page scores from 0 to 100. Each kind of problem costs points, errors twice as much as warnings, and repeats of the same problem a little extra."
+msgstr "Elke gescande pagina krijgt een score van 0 tot 100. Elk soort probleem kost punten, een fout twee keer zoveel als een waarschuwing, en herhalingen van hetzelfde probleem nog iets extra."
+
+#: includes/class-seohc-launch-checks.php:379
+msgid "Everything is up to date."
+msgstr "Alles is up-to-date."
+
+#: includes/admin/class-seohc-admin.php:415
+msgid "Export CSV"
+msgstr "CSV exporteren"
+
+#: includes/class-seohc-launch-checks.php:96
+msgid "Favicon"
+msgstr "Favicon"
+
+#: includes/class-seohc-launch-checks.php:98
+msgid "Featured image on the homepage"
+msgstr "Uitgelichte afbeelding op de homepage"
+
+#. translators: %s: file name.
+#: includes/class-seohc-scanner.php:262
+msgid "Featured image: %s"
+msgstr "Uitgelichte afbeelding: %s"
+
+#: includes/class-seohc-link-checker.php:133
+msgid "File not found in the uploads folder."
+msgstr "Bestand niet gevonden in de uploadsmap."
+
+#: includes/admin/class-seohc-issues-list-table.php:185
+#: includes/admin/class-seohc-pages-list-table.php:158
+msgid "Filter"
+msgstr "Filteren"
+
+#: includes/admin/class-seohc-issues-list-table.php:159
+#: includes/admin/class-seohc-pages-list-table.php:148
+msgid "Filter by post type"
+msgstr "Filteren op berichttype"
+
+#: includes/admin/class-seohc-issues-list-table.php:170
+msgid "Filter by severity"
+msgstr "Filteren op ernst"
+
+#: includes/admin/class-seohc-issues-list-table.php:177
+msgid "Filter by status"
+msgstr "Filteren op status"
+
+#: includes/admin/class-seohc-scans-page.php:60
+msgid "Finished"
+msgstr "Afgerond"
+
+#: includes/admin/class-seohc-admin.php:511
+#: includes/admin/class-seohc-dashboard-widget.php:109
+#: includes/admin/class-seohc-issues-list-table.php:279
+#: includes/admin/class-seohc-scans-page.php:65
+#: includes/class-seohc-csv-exporter.php:93
+msgid "Fixed"
+msgstr "Opgelost"
+
+#: includes/admin/class-seohc-issues-list-table.php:182
+msgid "Fixed since the last scan"
+msgstr "Opgelost sinds de laatste scan"
+
+#: includes/admin/class-seohc-inline-edit.php:192
+msgid "Fixed."
+msgstr "Opgelost."
+
+#: includes/class-seohc-launch-checks.php:99
+msgid "Footer credit"
+msgstr "Footervermelding"
+
+#: includes/class-seohc-settings.php:195
+msgid "Footer credit text"
+msgstr "Tekst van de footervermelding"
+
+#: includes/class-seohc-repository.php:885
+msgid "Good"
+msgstr "Goed"
+
+#: includes/class-seohc-launch-checks.php:104
+msgid "Google Analytics / Tag Manager"
+msgstr "Google Analytics / Tag Manager"
+
+#: includes/class-seohc-launch-checks.php:448
+msgid "Google Analytics or Tag Manager code was found."
+msgstr "Er is code van Google Analytics of Tag Manager gevonden."
+
+#: includes/class-seohc-issue-types.php:66
+msgid "Heading level skipped"
+msgstr "Kopniveau overgeslagen"
+
+#: includes/class-seohc-launch-checks.php:102
+msgid "HTTPS"
+msgstr "HTTPS"
+
+#: includes/class-seohc-issue-types.php:54
+msgid "Image file too large"
+msgstr "Afbeeldingsbestand te groot"
+
+#: includes/class-seohc-issue-types.php:50
+msgid "Image without alt text"
+msgstr "Afbeelding zonder alt-tekst"
+
+#: includes/class-seohc-settings.php:151
+msgid "In characters. Google usually shows around 155-160."
+msgstr "In tekens. Google toont er meestal ongeveer 155-160."
+
+#: includes/class-seohc-settings.php:137
+msgid "In characters. Google usually shows around 60."
+msgstr "In tekens. Google toont er meestal ongeveer 60."
+
+#: includes/class-seohc-settings.php:166
+msgid "In KB. Images in your uploads folder above this size are reported, 300 is a sensible start. Use 0 to disable this check, which is how it starts out: on a site with many photos it can report a lot at once."
+msgstr "In KB. Afbeeldingen in je uploadsmap die groter zijn worden gemeld; 300 is een verstandig begin. Gebruik 0 om deze controle uit te zetten, en zo staat hij ook standaard: op een site met veel foto’s kan hij in één keer veel melden."
+
+#. translators: %s: plugin names.
+#: includes/class-seohc-launch-checks.php:562
+msgid "Inactive plugins: %s. Remove the ones you do not need."
+msgstr "Inactieve plugins: %s. Verwijder wat je niet nodig hebt."
+
+#: includes/class-seohc-launch-checks.php:168
+msgid "Info"
+msgstr "Info"
+
+#: includes/admin/class-seohc-issues-list-table.php:60
+#: includes/admin/class-seohc-scans-page.php:146
+#: includes/class-seohc-csv-exporter.php:51
+msgid "Issue"
+msgstr "Probleem"
+
+#. translators: %s: link to the issues overview.
+#: includes/admin/class-seohc-admin.php:461
+#: includes/admin/class-seohc-admin.php:69
+#: includes/admin/class-seohc-pages-list-table.php:52
+#: includes/admin/class-seohc-scans-page.php:38
+#: includes/admin/class-seohc-scans-page.php:63
+msgid "Issues"
+msgstr "Problemen"
+
+#. translators: %s: date and time.
+#: includes/class-seohc-launch-checks.php:182
+msgid "Last run: %s"
+msgstr "Laatst uitgevoerd: %s"
+
+#. translators: %s: date and time of the last scan.
+#: includes/admin/class-seohc-admin.php:599
+#: includes/admin/class-seohc-dashboard-widget.php:145
+msgid "Last scan: %s"
+msgstr "Laatste scan: %s"
+
+#: includes/admin/class-seohc-scans-page.php:77
+msgid "Latest"
+msgstr "Nieuwste"
+
+#: includes/admin/class-seohc-admin.php:72
+#: includes/class-seohc-launch-checks.php:172
+#: includes/class-seohc-settings.php:189
+msgid "Launch checks"
+msgstr "Livegang-checks"
+
+#. translators: %s: post status such as draft or trash.
+#: includes/class-seohc-link-checker.php:143
+msgid "Links to content with status \"%s\"."
+msgstr "Linkt naar content met status \"%s\"."
+
+#: includes/class-seohc-settings.php:157
+msgid "Maximum image size"
+msgstr "Maximale afbeeldingsgrootte"
+
+#: includes/class-seohc-settings.php:142
+msgid "Maximum meta description length"
+msgstr "Maximale lengte meta description"
+
+#: includes/class-seohc-settings.php:128
+msgid "Maximum title length"
+msgstr "Maximale titellengte"
+
+#: includes/admin/class-seohc-inline-edit.php:108
+msgid "Meta description"
+msgstr "Meta description"
+
+#: includes/class-seohc-issue-types.php:42
+msgid "Meta description too long"
+msgstr "Meta description te lang"
+
+#: includes/class-seohc-settings.php:114
+msgid "Minimum word count"
+msgstr "Minimum aantal woorden"
+
+#: includes/class-seohc-issue-types.php:58
+msgid "Missing H1"
+msgstr "H1 ontbreekt"
+
+#: includes/class-seohc-issue-types.php:38
+msgid "Missing meta description"
+msgstr "Meta description ontbreekt"
+
+#: includes/class-seohc-issue-types.php:26
+msgid "Missing title"
+msgstr "Titel ontbreekt"
+
+#: includes/class-seohc-issue-types.php:62
+msgid "Multiple H1s"
+msgstr "Meerdere H1’s"
+
+#: includes/class-seohc-settings.php:347
+msgid "My theme shows the post title as an H1 above the content"
+msgstr "Mijn thema toont de berichttitel als H1 boven de content"
+
+#: includes/class-seohc-repository.php:890
+msgid "Needs work"
+msgstr "Kan beter"
+
+#: includes/admin/class-seohc-admin.php:501
+#: includes/admin/class-seohc-dashboard-widget.php:105
+#: includes/admin/class-seohc-issues-list-table.php:287
+#: includes/admin/class-seohc-scans-page.php:64
+#: includes/class-seohc-csv-exporter.php:97
+msgid "New"
+msgstr "Nieuw"
+
+#: includes/admin/class-seohc-issues-list-table.php:180
+msgid "New since the last scan"
+msgstr "Nieuw sinds de laatste scan"
+
+#: includes/class-seohc-launch-checks.php:94
+msgid "No \"Home\" in the homepage title"
+msgstr "Geen \"Home\" in de titel van de homepage"
+
+#: includes/class-seohc-launch-checks.php:331
+msgid "No credit text configured in the settings."
+msgstr "Er is geen vermelding ingesteld bij de instellingen."
+
+#: includes/class-seohc-launch-checks.php:410
+msgid "No development domains configured in the settings."
+msgstr "Er zijn geen ontwikkeldomeinen ingesteld bij de instellingen."
+
+#: includes/admin/class-seohc-pages-list-table.php:182
+msgid "No earlier scan to compare this page with yet."
+msgstr "Nog geen eerdere scan om deze pagina mee te vergelijken."
+
+#: includes/class-seohc-launch-checks.php:279
+msgid "No favicon found. Set one under Appearance > Customize > Site Identity."
+msgstr "Geen favicon gevonden. Stel er een in bij Weergave > Aanpassen > Site-identiteit."
+
+#. translators: %s: link to the issues overview.
+#: includes/admin/class-seohc-scans-page.php:37
+msgid "No finished scan yet. Start a full scan on the %s screen and it will show up here."
+msgstr "Nog geen afgeronde scan. Start een volledige scan op het scherm %s, dan verschijnt hij hier."
+
+#: includes/class-seohc-launch-checks.php:450
+msgid "No Google Analytics or Tag Manager code found. Only needed when the client uses it."
+msgstr "Geen code van Google Analytics of Tag Manager gevonden. Alleen nodig als de klant het gebruikt."
+
+#: includes/class-seohc-launch-checks.php:109
+msgid "No inactive plugins"
+msgstr "Geen inactieve plugins"
+
+#: includes/admin/class-seohc-issues-list-table.php:408
+msgid "No issues found for these filters."
+msgstr "Geen problemen gevonden met deze filters."
+
+#. translators: %s: plugin folder names.
+#: includes/class-seohc-launch-checks.php:464
+msgid "No known cookie consent plugin is active. Check whether the site uses another solution."
+msgstr "Er is geen bekende cookieplugin actief. Controleer of de site een andere oplossing gebruikt."
+
+#: includes/class-seohc-launch-checks.php:103
+msgid "No links to the development site"
+msgstr "Geen links naar de ontwikkelsite"
+
+#: includes/class-seohc-issue-types.php:78
+msgid "No links to this page"
+msgstr "Geen links naar deze pagina"
+
+#: includes/class-seohc-scanner.php:138
+msgid "No meta description was written; search engines will pick their own snippet."
+msgstr "Er is geen meta description geschreven; zoekmachines kiezen dan zelf een fragment."
+
+#: includes/class-seohc-repository.php:447
+msgid "No other page links to this one, and it is not in a menu."
+msgstr "Geen enkele andere pagina linkt hiernaartoe, en hij staat niet in een menu."
+
+#: includes/class-seohc-link-checker.php:156
+msgid "No page matches this URL."
+msgstr "Geen enkele pagina hoort bij deze URL."
+
+#: includes/admin/class-seohc-pages-list-table.php:282
+msgid "No pages found. Start a scan first."
+msgstr "Geen pagina’s gevonden. Start eerst een scan."
+
+#. translators: %s: list of domains with counts.
+#: includes/class-seohc-launch-checks.php:434
+msgid "No references to the development domains found."
+msgstr "Geen verwijzingen naar de ontwikkeldomeinen gevonden."
+
+#: includes/admin/class-seohc-issues-list-table.php:401
+msgid "No scan results yet. Start a scan to check your site."
+msgstr "Nog geen scanresultaten. Start een scan om je site te controleren."
+
+#: includes/class-seohc-scanner.php:137
+msgid "No SEO plugin is active, so no meta description is output."
+msgstr "Er is geen SEO-plugin actief, dus er wordt geen meta description meegegeven."
+
+#. translators: %s: sitemap URL.
+#: includes/class-seohc-launch-checks.php:496
+msgid "No sitemap found at %s. Enable it in your SEO plugin."
+msgstr "Geen sitemap gevonden op %s. Zet hem aan in je SEO-plugin."
+
+#: includes/class-seohc-seo-meta.php:42
+msgid "none (WordPress defaults)"
+msgstr "geen (standaard van WordPress)"
+
+#. translators: %s: comma separated plugin names.
+#: includes/class-seohc-launch-checks.php:361
+msgid "Not active: %s. Also check that they are configured."
+msgstr "Niet actief: %s. Controleer ook of ze zijn ingesteld."
+
+#: includes/admin/class-seohc-scans-page.php:147
+msgid "Now"
+msgstr "Nu"
+
+#: includes/class-seohc-settings.php:182
+msgid "Number of posts scanned per background step. Lower this on slow hosting."
+msgstr "Aantal berichten dat per stap op de achtergrond wordt gescand. Zet dit lager bij trage hosting."
+
+#: includes/class-seohc-launch-checks.php:165
+msgid "OK"
+msgstr "OK"
+
+#: includes/class-seohc-settings.php:348
+msgid "Only used when the post content is scanned. When checked, the content itself should not contain an H1."
+msgstr "Wordt alleen gebruikt als de berichtinhoud wordt gescand. Als dit aanstaat, hoort er in de content zelf geen H1 te staan."
+
+#: includes/admin/class-seohc-issues-list-table.php:58
+#: includes/admin/class-seohc-pages-list-table.php:51
+msgid "Page"
+msgstr "Pagina"
+
+#: includes/class-seohc-settings.php:335
+msgid "Page builders such as Oxygen, Breakdance and Elementor store their layout outside the normal post content. The rendered page is fetched with an HTTP request; the site header, footer and navigation are ignored."
+msgstr "Paginabouwers zoals Oxygen, Breakdance en Elementor slaan hun opmaak buiten de gewone berichtinhoud op. De weergegeven pagina wordt met een HTTP-verzoek opgehaald; de header, de footer en de navigatie van de site worden genegeerd."
+
+#: includes/class-seohc-issue-types.php:82
+msgid "Page could not be loaded"
+msgstr "Pagina kon niet worden geladen"
+
+#: includes/admin/class-seohc-admin.php:540
+#: includes/admin/class-seohc-admin.php:70
+#: includes/admin/class-seohc-dashboard-widget.php:80
+msgid "Page scores"
+msgstr "Paginascores"
+
+#: includes/admin/class-seohc-admin.php:479
+#: includes/admin/class-seohc-scans-page.php:67
+msgid "Pages scanned"
+msgstr "Pagina’s gescand"
+
+#: includes/admin/class-seohc-admin.php:470
+#: includes/admin/class-seohc-scans-page.php:66
+msgid "Pages with issues"
+msgstr "Pagina’s met problemen"
+
+#: includes/class-seohc-settings.php:169
+msgid "Pages without links"
+msgstr "Pagina’s zonder links"
+
+#: includes/admin/class-seohc-scans-page.php:132
+msgid "Per kind of problem"
+msgstr "Per soort probleem"
+
+#: includes/class-seohc-settings.php:103
+msgid "Performance"
+msgstr "Prestaties"
+
+#. translators: %s: permalink structure.
+#: includes/class-seohc-launch-checks.php:263
+msgid "Permalink structure: %s"
+msgstr "Permalinkstructuur: %s"
+
+#: includes/class-seohc-launch-checks.php:260
+msgid "Plain permalinks (?p=123) are used. Choose \"Post name\" under Settings > Permalinks."
+msgstr "Er worden eenvoudige permalinks (?p=123) gebruikt. Kies \"Berichtnaam\" bij Instellingen > Permalinks."
+
+#: includes/class-seohc-repository.php:895
+msgid "Poor"
+msgstr "Slecht"
+
+#: includes/class-seohc-settings.php:297
+msgid "Post content only (fastest)"
+msgstr "Alleen de berichtinhoud (snelst)"
+
+#: includes/class-seohc-csv-exporter.php:46
+msgid "Post ID"
+msgstr "Bericht-ID"
+
+#: includes/class-seohc-csv-exporter.php:48
+msgid "Post type"
+msgstr "Berichttype"
+
+#: includes/class-seohc-settings.php:108
+msgid "Post types"
+msgstr "Berichttypen"
+
+#: includes/admin/class-seohc-scans-page.php:148
+msgid "Previous scan"
+msgstr "Vorige scan"
+
+#: includes/class-seohc-settings.php:284
+msgid "Report pages that nothing links to"
+msgstr "Pagina’s melden waar niets naartoe linkt"
+
+#: includes/admin/class-seohc-issues-list-table.php:219
+msgid "Rescan"
+msgstr "Opnieuw scannen"
+
+#: includes/class-seohc-settings.php:360
+msgid "Rescan a post in the background when it is saved"
+msgstr "Een bericht op de achtergrond opnieuw scannen zodra het wordt opgeslagen"
+
+#: includes/class-seohc-settings.php:185
+msgid "Rescan on save"
+msgstr "Opnieuw scannen bij opslaan"
+
+#. translators: %d: HTTP status code.
+#: includes/class-seohc-link-checker.php:160
+msgid "Returns HTTP %d."
+msgstr "Geeft HTTP %d terug."
+
+#: includes/class-seohc-settings.php:96
+msgid "Rules"
+msgstr "Regels"
+
+#: includes/class-seohc-launch-checks.php:186
+msgid "Run checks"
+msgstr "Controles uitvoeren"
+
+#: includes/class-seohc-launch-checks.php:186
+msgid "Run checks again"
+msgstr "Controles opnieuw uitvoeren"
+
+#: includes/admin/class-seohc-issues-list-table.php:359
+msgid "Save"
+msgstr "Opslaan"
+
+#. translators: %s: name of the active SEO plugin.
+#: includes/admin/class-seohc-inline-edit.php:100
+msgid "Saved in %s. Leave empty to use its default."
+msgstr "Opgeslagen in %s. Laat leeg om de standaard te gebruiken."
+
+#. translators: %s: name of the active SEO plugin.
+#: includes/admin/class-seohc-inline-edit.php:110
+msgid "Saved in %s. Summarise the page in one sentence."
+msgstr "Opgeslagen in %s. Vat de pagina samen in één zin."
+
+#: includes/admin/class-seohc-inline-edit.php:193
+msgid "Saved, but the issue is still reported."
+msgstr "Opgeslagen, maar het probleem wordt nog steeds gemeld."
+
+#. translators: 1: processed posts, 2: total posts.
+#: includes/admin/class-seohc-admin.php:164
+msgid "Saving…"
+msgstr "Bezig met opslaan…"
+
+#. translators: 1: processed posts, 2: total posts.
+#: includes/admin/class-seohc-admin.php:163
+msgid "Scan finished. Reloading…"
+msgstr "Scan afgerond. Bezig met herladen…"
+
+#: includes/admin/class-seohc-admin.php:71
+#: includes/admin/class-seohc-scans-page.php:27
+msgid "Scan history"
+msgstr "Scangeschiedenis"
+
+#: includes/admin/class-seohc-admin.php:578
+msgid "Scan in progress"
+msgstr "Scan bezig"
+
+#. translators: 1: processed posts, 2: total posts.
+#: includes/admin/class-seohc-dashboard-widget.php:129
+msgid "Scan in progress: %1$s of %2$s pages."
+msgstr "Scan bezig: %1$s van %2$s pagina’s."
+
+#: includes/admin/class-seohc-pages-list-table.php:55
+msgid "Scanned"
+msgstr "Gescand"
+
+#: includes/class-seohc-csv-exporter.php:55
+msgid "Scanned at (UTC)"
+msgstr "Gescand op (UTC)"
+
+#: includes/admin/class-seohc-admin.php:71
+#: includes/admin/class-seohc-dashboard-widget.php:83
+msgid "Scans"
+msgstr "Scans"
+
+#: includes/admin/class-seohc-issues-list-table.php:59
+#: includes/admin/class-seohc-pages-list-table.php:49
+msgid "Score"
+msgstr "Score"
+
+#: includes/class-seohc-launch-checks.php:476
+msgid "Search engines are allowed to index the site."
+msgstr "Zoekmachines mogen de site indexeren."
+
+#: includes/class-seohc-launch-checks.php:106
+msgid "Search engines may index the site"
+msgstr "Zoekmachines mogen de site indexeren"
+
+#: includes/admin/class-seohc-admin.php:432
+#: includes/admin/class-seohc-admin.php:559
+msgid "Search pages"
+msgstr "Pagina’s zoeken"
+
+#: includes/admin/class-seohc-admin.php:522
+msgid "See all scans"
+msgstr "Alle scans bekijken"
+
+#: includes/class-seohc-settings.php:234
+msgid "Select at least one post type. The defaults were restored."
+msgstr "Kies minstens één berichttype. De standaardwaarden zijn hersteld."
+
+#: includes/admin/class-seohc-admin.php:62
+msgid "SEO Health"
+msgstr "SEO Health"
+
+#: includes/admin/class-seohc-admin.php:413
+#: includes/admin/class-seohc-admin.php:61
+#: includes/admin/class-seohc-dashboard-widget.php:25
+msgid "SEO Health Check"
+msgstr "SEO Health Check"
+
+#: includes/admin/class-seohc-admin.php:73
+#: includes/class-seohc-settings.php:411
+msgid "SEO Health Check settings"
+msgstr "Instellingen SEO Health Check"
+
+#: includes/admin/class-seohc-admin.php:69
+msgid "SEO issues"
+msgstr "SEO-problemen"
+
+#: includes/admin/class-seohc-inline-edit.php:98
+msgid "SEO title"
+msgstr "SEO-titel"
+
+#: includes/admin/class-seohc-admin.php:128
+#: includes/admin/class-seohc-admin.php:73
+msgid "Settings"
+msgstr "Instellingen"
+
+#: includes/admin/class-seohc-issues-list-table.php:62
+#: includes/class-seohc-csv-exporter.php:52
+msgid "Severity"
+msgstr "Ernst"
+
+#. translators: %d: number of pages sharing the value.
+#: includes/class-seohc-repository.php:332
+msgid "Shared by %d pages."
+msgstr "Gedeeld door %d pagina’s."
+
+#: includes/admin/class-seohc-pages-list-table.php:211
+msgid "Show issues"
+msgstr "Problemen tonen"
+
+#: includes/admin/class-seohc-issues-list-table.php:65
+msgid "Since"
+msgstr "Sinds"
+
+#: includes/admin/class-seohc-dashboard-widget.php:112
+msgid "since the previous scan"
+msgstr "sinds de vorige scan"
+
+#: includes/admin/class-seohc-admin.php:521
+msgid "since the previous scan."
+msgstr "sinds de vorige scan."
+
+#: includes/class-seohc-launch-checks.php:173
+msgid "Site-wide settings from a typical go-live checklist. Manual tasks such as testing forms or informing the client are not included."
+msgstr "Instellingen voor de hele site, uit een gebruikelijke livegang-checklist. Handmatige taken zoals formulieren testen of de klant inlichten staan er niet bij."
+
+#. translators: %s: sitemap URL.
+#: includes/class-seohc-launch-checks.php:493
+msgid "Sitemap found at %s. Submit it in Google Search Console."
+msgstr "Sitemap gevonden op %s. Dien hem in bij Google Search Console."
+
+#: includes/class-seohc-launch-checks.php:100
+msgid "Standard plugins installed"
+msgstr "Standaardplugins geïnstalleerd"
+
+#: includes/admin/class-seohc-dashboard-widget.php:162
+msgid "Start a scan"
+msgstr "Een scan starten"
+
+#: includes/admin/class-seohc-admin.php:613
+msgid "Start full scan"
+msgstr "Volledige scan starten"
+
+#: includes/admin/class-seohc-issues-list-table.php:64
+#: includes/class-seohc-csv-exporter.php:54
+#: includes/class-seohc-launch-checks.php:207
+msgid "Status"
+msgstr "Status"
+
+#: includes/class-seohc-settings.php:202
+msgid "Text that must appear on the homepage, for example \"Website by Agency\". Leave empty to skip this check."
+msgstr "Tekst die op de homepage moet staan, bijvoorbeeld \"Website door Bureau\". Laat leeg om deze controle over te slaan."
+
+#. translators: %s: average score.
+#: includes/admin/class-seohc-admin.php:546
+msgid "The average for this site is %s."
+msgstr "Het gemiddelde van deze site is %s."
+
+#: includes/class-seohc-scanner.php:50
+msgid "The content is empty."
+msgstr "De content is leeg."
+
+#: includes/class-seohc-launch-checks.php:318
+msgid "The homepage has a featured image."
+msgstr "De homepage heeft een uitgelichte afbeelding."
+
+#: includes/class-seohc-launch-checks.php:320
+msgid "The homepage has no featured image, so social media shares show no image."
+msgstr "De homepage heeft geen uitgelichte afbeelding, dus bij delen op social media verschijnt er geen afbeelding."
+
+#: includes/class-seohc-launch-checks.php:315
+msgid "The homepage is not a static page."
+msgstr "De homepage is geen vaste pagina."
+
+#. translators: %d: HTTP status code.
+#: includes/class-seohc-launch-checks.php:603
+msgid "The homepage returned HTTP status %d."
+msgstr "De homepage gaf HTTP-status %d terug."
+
+#: includes/class-seohc-launch-checks.php:240
+msgid "The homepage shows the latest posts; check its title in your SEO plugin."
+msgstr "De homepage toont de nieuwste berichten; controleer de titel in je SEO-plugin."
+
+#: includes/admin/class-seohc-issues-list-table.php:405
+msgid "The last scan did not solve anything yet. Fix an issue and the next scan will list it here."
+msgstr "De laatste scan heeft nog niets opgelost. Los een probleem op, dan staat het na de volgende scan hier."
+
+#: includes/class-seohc-scanner.php:283
+msgid "The page has no H1 heading."
+msgstr "De pagina heeft geen H1-kop."
+
+#. translators: %d: HTTP status code.
+#: includes/class-seohc-content-resolver.php:117
+msgid "The page returned HTTP status %d."
+msgstr "De pagina gaf HTTP-status %d terug."
+
+#: includes/admin/class-seohc-admin.php:370
+msgid "The page was rescanned."
+msgstr "De pagina is opnieuw gescand."
+
+#: includes/class-seohc-scanner.php:35
+msgid "The post content was scanned instead."
+msgstr "In plaats daarvan is de berichtinhoud gescand."
+
+#: includes/class-seohc-content-resolver.php:97
+msgid "The post has no public URL."
+msgstr "Het bericht heeft geen openbare URL."
+
+#: includes/class-seohc-scanner.php:116
+msgid "The post has no title."
+msgstr "Het bericht heeft geen titel."
+
+#: includes/admin/class-seohc-admin.php:367
+msgid "The scan has started and runs in the background. You can leave this page."
+msgstr "De scan is gestart en draait op de achtergrond. Je kunt deze pagina rustig verlaten."
+
+#. translators: 1: date of the previous scan, 2: date of the most recent scan.
+#: includes/admin/class-seohc-scans-page.php:137
+msgid "The scan of %1$s compared with the one of %2$s."
+msgstr "De scan van %1$s vergeleken met die van %2$s."
+
+#: includes/admin/class-seohc-admin.php:369
+msgid "The scan was cancelled. Results scanned so far are kept."
+msgstr "De scan is geannuleerd. Wat tot nu toe is gescand blijft bewaard."
+
+#: includes/class-seohc-launch-checks.php:397
+msgid "The site address does not use HTTPS. Change it under Settings > General after installing a certificate."
+msgstr "Het siteadres gebruikt geen HTTPS. Pas het aan bij Instellingen > Algemeen nadat je een certificaat hebt geïnstalleerd."
+
+#: includes/class-seohc-launch-checks.php:395
+msgid "The site address uses HTTPS."
+msgstr "Het siteadres gebruikt HTTPS."
+
+#: includes/class-seohc-launch-checks.php:277
+msgid "The theme outputs a favicon."
+msgstr "Het thema geeft zelf een favicon mee."
+
+#. translators: %s: the homepage title.
+#: includes/class-seohc-launch-checks.php:249
+msgid "The title is \"%s\"."
+msgstr "De titel is \"%s\"."
+
+#. translators: %s: the homepage title.
+#: includes/class-seohc-launch-checks.php:246
+msgid "The title is \"%s\". Replace \"Home\" with a descriptive title."
+msgstr "De titel is \"%s\". Vervang \"Home\" door een titel die zegt waar de pagina over gaat."
+
+#: includes/class-seohc-settings.php:110
+msgid "Theme H1"
+msgstr "H1 van het thema"
+
+#. translators: %s: plugin names.
+#: includes/class-seohc-launch-checks.php:564
+msgid "There are no inactive plugins."
+msgstr "Er zijn geen inactieve plugins."
+
+#: includes/class-seohc-issue-types.php:70
+msgid "Thin content"
+msgstr "Dunne content"
+
+#: includes/class-seohc-launch-checks.php:119
+msgid "This check could not be completed."
+msgstr "Deze controle kon niet worden afgerond."
+
+#: includes/admin/class-seohc-inline-edit.php:168
+msgid "This issue cannot be fixed from this screen."
+msgstr "Dit probleem kun je niet vanaf dit scherm oplossen."
+
+#: includes/class-seohc-launch-checks.php:187
+msgid "This makes a few requests to your own site and can take up to half a minute."
+msgstr "Hiervoor worden een paar verzoeken aan je eigen site gedaan; dat kan tot een halve minuut duren."
+
+#: includes/admin/class-seohc-inline-edit.php:163
+msgid "This result no longer exists. Refresh the page."
+msgstr "Dit resultaat bestaat niet meer. Ververs de pagina."
+
+#: includes/admin/class-seohc-admin.php:606
+#: includes/admin/class-seohc-dashboard-widget.php:159
+msgid "This site has not been scanned yet."
+msgstr "Deze site is nog niet gescand."
+
+#. translators: %s: domain.
+#: includes/class-seohc-launch-checks.php:418
+msgid "This site itself runs on %s, so this check only makes sense on the live site."
+msgstr "Deze site draait zelf op %s, dus deze controle is pas zinvol op de live site."
+
+#: includes/class-seohc-csv-exporter.php:47
+msgid "Title"
+msgstr "Titel"
+
+#: includes/class-seohc-issue-types.php:30
+msgid "Title too long"
+msgstr "Titel te lang"
+
+#: includes/admin/class-seohc-scans-page.php:61
+msgid "Took"
+msgstr "Duur"
+
+#: includes/admin/class-seohc-issues-list-table.php:63
+#: includes/admin/class-seohc-pages-list-table.php:54
+msgid "Type"
+msgstr "Type"
+
+#: includes/admin/class-seohc-issues-list-table.php:181
+#: includes/admin/class-seohc-issues-list-table.php:290
+#: includes/class-seohc-csv-exporter.php:100
+msgid "Unchanged"
+msgstr "Onveranderd"
+
+#: includes/admin/class-seohc-admin.php:261
+msgid "unchanged"
+msgstr "gelijk"
+
+#. translators: 1: HTTP status code, 2: redirect target.
+#: includes/class-seohc-launch-checks.php:301
+msgid "Unknown URLs redirect (%1$d) to %2$s instead of showing a 404 page."
+msgstr "Onbekende URL’s verwijzen door (%1$d) naar %2$s in plaats van een 404-pagina te tonen."
+
+#. translators: %d: HTTP status code.
+#: includes/class-seohc-launch-checks.php:304
+msgid "Unknown URLs return status %d instead of 404, so search engines may index error pages."
+msgstr "Onbekende URL’s geven status %d in plaats van 404, waardoor zoekmachines foutpagina’s kunnen indexeren."
+
+#: includes/class-seohc-launch-checks.php:297
+msgid "Unknown URLs return status 404. Check the page design yourself."
+msgstr "Onbekende URL’s geven status 404. Controleer zelf nog hoe die pagina eruitziet."
+
+#. translators: 1: core updates, 2: plugin updates, 3: theme updates.
+#: includes/class-seohc-launch-checks.php:384
+msgid "Updates available: WordPress %1$d, plugins %2$d, themes %3$d."
+msgstr "Updates beschikbaar: WordPress %1$d, plugins %2$d, thema’s %3$d."
+
+#: includes/class-seohc-csv-exporter.php:49
+msgid "URL"
+msgstr "URL"
+
+#: includes/class-seohc-launch-checks.php:95
+msgid "URL structure"
+msgstr "URL-structuur"
+
+#: includes/admin/class-seohc-issues-list-table.php:204
+#: includes/admin/class-seohc-pages-list-table.php:217
+msgid "View"
+msgstr "Bekijken"
+
+#: includes/admin/class-seohc-dashboard-widget.php:77
+msgid "View issues"
+msgstr "Problemen bekijken"
+
+#: includes/admin/class-seohc-issues-list-table.php:246
+msgid "Warning"
+msgstr "Waarschuwing"
+
+#: includes/admin/class-seohc-issues-list-table.php:174
+msgid "Warnings"
+msgstr "Waarschuwingen"
+
+#: includes/admin/class-seohc-scans-page.php:29
+msgid "What every finished scan found, newest first, so you can see whether the site is moving forwards. The last twenty scans are kept."
+msgstr "Wat elke afgeronde scan heeft gevonden, de nieuwste eerst, zodat je ziet of de site vooruitgaat. De laatste twintig scans worden bewaard."
+
+#: includes/class-seohc-settings.php:89
+msgid "What to scan"
+msgstr "Wat er wordt gescand"
+
+#: includes/class-seohc-launch-checks.php:101
+msgid "WordPress, plugins and themes up to date"
+msgstr "WordPress, plugins en thema’s up-to-date"
+
+#: includes/admin/class-seohc-pages-list-table.php:53
+msgid "Words"
+msgstr "Woorden"
+
+#: includes/class-seohc-launch-checks.php:108
+msgid "WWW / non-WWW and HTTP / HTTPS redirects"
+msgstr "Doorverwijzingen WWW / non-WWW en HTTP / HTTPS"
+
+#: includes/class-seohc-launch-checks.php:107
+msgid "XML sitemap"
+msgstr "XML-sitemap"
+
+#: includes/class-seohc-launch-checks.php:159
+#: includes/class-seohc-settings.php:407
+msgid "You do not have permission to access this page."
+msgstr "Je hebt geen toestemming om deze pagina te bekijken."
+
+#: includes/admin/class-seohc-admin.php:279
+#: includes/admin/class-seohc-inline-edit.php:155
+#: includes/admin/class-seohc-scans-page.php:20
+#: includes/class-seohc-launch-checks.php:137
+msgid "You do not have permission to do this."
+msgstr "Je hebt geen toestemming om dit te doen."
+
+#: includes/admin/class-seohc-inline-edit.php:212
+msgid "You may not edit this image."
+msgstr "Je mag deze afbeelding niet bewerken."
+
+#: includes/admin/class-seohc-inline-edit.php:312
+msgid "You may not edit this page."
+msgstr "Je mag deze pagina niet bewerken."
