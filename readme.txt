@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.8.0
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -175,6 +175,11 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.9.0 =
+* New launch check: whether the old development site actually sends visitors to the live one. The existing check reads the content; this one asks the server, so a redirect in a plugin, in .htaccess or at the DNS provider all count.
+* New launch check: whether the client has an administrator account of their own, judged on the email domains you filled in.
+* New launch check: whether a plugin replaced the WordPress login screen.
 
 = 0.8.0 =
 * New launch check: where the forms send their mail. Catches forms still mailing to the WordPress administrator, forms without any recipient, and forms still mailing to the agency that built the site.

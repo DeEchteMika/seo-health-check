@@ -104,10 +104,12 @@ class SEOHC_Launch_Checks {
 			array( 'before', 'form_recipients', __( 'Forms mail to the client', 'seo-health-check' ) ),
 			array( 'before', 'form_confirmations', __( 'Thank you pages for forms', 'seo-health-check' ) ),
 			array( 'before', 'form_spam', __( 'Spam protection on forms', 'seo-health-check' ) ),
+			array( 'before', 'login_screen', __( 'Custom login screen', 'seo-health-check' ) ),
 			array( 'launch', 'https', __( 'HTTPS', 'seo-health-check' ) ),
 			array( 'launch', 'dev_links', __( 'No links to the development site', 'seo-health-check' ) ),
 			array( 'launch', 'analytics', __( 'Google Analytics / Tag Manager', 'seo-health-check' ) ),
 			array( 'launch', 'cookie_notice', __( 'Cookie notice', 'seo-health-check' ) ),
+			array( 'launch', 'dev_redirects', __( 'Development site redirects', 'seo-health-check' ) ),
 			array( 'after', 'indexing', __( 'Search engines may index the site', 'seo-health-check' ) ),
 			array( 'after', 'sitemap', __( 'XML sitemap', 'seo-health-check' ) ),
 			array( 'after', 'redirects', __( 'WWW / non-WWW and HTTP / HTTPS redirects', 'seo-health-check' ) ),
@@ -115,6 +117,7 @@ class SEOHC_Launch_Checks {
 			array( 'after', 'search_console', __( 'Search Console verification', 'seo-health-check' ) ),
 			array( 'after', 'mail_records', __( 'SPF and DMARC', 'seo-health-check' ) ),
 			array( 'after', 'default_admin', __( 'Default "admin" login', 'seo-health-check' ) ),
+			array( 'after', 'client_account', __( 'The client has an account', 'seo-health-check' ) ),
 		);
 
 		$results = array();
@@ -779,6 +782,172 @@ class SEOHC_Launch_Checks {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Plugins that replace the WordPress login screen, keyed by plugin folder.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function login_plugins() {
+		return apply_filters(
+			'seo_health_check_login_plugins',
+			array(
+				'loginpress'                   => 'LoginPress',
+				'custom-login-page-customizer' => 'Custom Login Page Customizer',
+				'login-customizer'             => 'Login Customizer',
+				'branda-white-labeling'        => 'Branda',
+				'wps-hide-login'               => 'WPS Hide Login',
+				'theme-my-login'               => 'Theme My Login',
+				'admin-custom-login'           => 'Admin Custom Login',
+				'colorlib-login-customizer'    => 'Colorlib Login Customizer',
+			)
+		);
+	}
+
+	/**
+	 * The domain of an email address, lowercase.
+	 *
+	 * @param string $email Email address.
+	 * @return string Empty when there is no domain in it.
+	 */
+	private static function email_domain( $email ) {
+		$at = strrchr( (string) $email, '@' );
+
+		return $at ? strtolower( substr( $at, 1 ) ) : '';
+	}
+
+	/**
+	 * Whether the login screen was given the agency's own look.
+	 *
+	 * Only plugins can be seen from here. A login screen styled from the theme or from a
+	 * must-use plugin leaves no trace that this check can find, so a miss is not a failure.
+	 *
+	 * @return array
+	 */
+	private static function check_login_screen() {
+		$active = self::active_plugin_folders();
+
+		foreach ( self::login_plugins() as $folder => $name ) {
+			if ( in_array( $folder, $active, true ) ) {
+				/* translators: %s: plugin name. */
+				return array( self::PASS, sprintf( __( 'The login screen is handled by %s.', 'seo-health-check' ), $name ) );
+			}
+		}
+
+		$mu = function_exists( 'wp_get_mu_plugins' ) ? count( (array) wp_get_mu_plugins() ) : 0;
+		if ( $mu > 0 ) {
+			return array( self::INFO, __( 'No login plugin found, but there are must-use plugins on this site and one of those may be doing it. Worth a look at the login screen yourself.', 'seo-health-check' ) );
+		}
+
+		return array( self::INFO, __( 'No login plugin found. If your login screen is styled from the theme, this check cannot see that; the seo_health_check_login_plugins filter can add what you use.', 'seo-health-check' ) );
+	}
+
+	/**
+	 * Whether the old development site sends visitors to the live one.
+	 *
+	 * The other development check reads the content; this one asks the server. A redirect set
+	 * up in a plugin, in .htaccess or at the DNS provider all end the same way, and that is the
+	 * only thing that matters to someone with the old address in their browser history.
+	 *
+	 * @return array
+	 */
+	private static function check_dev_redirects() {
+		$domains = array_filter( array_map( 'trim', explode( ',', (string) SEOHC_Settings::get( 'dev_domains' ) ) ) );
+		if ( ! $domains ) {
+			return array( self::INFO, __( 'No development domains configured in the settings.', 'seo-health-check' ) );
+		}
+
+		$live      = trailingslashit( home_url() );
+		$home_host = strtolower( (string) wp_parse_url( $live, PHP_URL_HOST ) );
+		$problems  = array();
+		$checked   = 0;
+
+		foreach ( $domains as $domain ) {
+			if ( $home_host === $domain || str_ends_with( $home_host, '.' . $domain ) ) {
+				/* translators: %s: domain. */
+				return array( self::INFO, sprintf( __( 'This site itself runs on %s, so this check only makes sense on the live site.', 'seo-health-check' ), $domain ) );
+			}
+
+			++$checked;
+			$url      = 'https://' . $domain . '/';
+			$response = wp_remote_get( $url, array_merge( self::request_args(), array( 'redirection' => 5 ) ) );
+
+			// Not reachable at all is fine: nobody ends up on the old site either.
+			if ( is_wp_error( $response ) ) {
+				continue;
+			}
+
+			$final = self::final_url( $response, $url );
+			if ( strtolower( (string) wp_parse_url( $final, PHP_URL_HOST ) ) !== $home_host ) {
+				/* translators: 1: development URL, 2: where it ends up. */
+				$problems[] = sprintf( __( '%1$s ends at %2$s', 'seo-health-check' ), $url, $final );
+			}
+		}
+
+		if ( $problems ) {
+			return array(
+				self::FAIL,
+				sprintf(
+					/* translators: %s: list of development URLs and where they end up. */
+					__( 'The development site does not send visitors to the live site: %s.', 'seo-health-check' ),
+					implode( '; ', $problems )
+				),
+			);
+		}
+
+		return array(
+			self::PASS,
+			sprintf(
+				/* translators: %d: number of development domains. */
+				_n( '%d development domain sends visitors to the live site, or cannot be reached at all.', '%d development domains send visitors to the live site, or cannot be reached at all.', $checked, 'seo-health-check' ),
+				$checked
+			),
+		);
+	}
+
+	/**
+	 * Whether the client has an administrator account of their own.
+	 *
+	 * Judged on the email domains filled in under Settings: if every administrator is on one
+	 * of those, the site was never actually handed over.
+	 *
+	 * @return array
+	 */
+	private static function check_client_account() {
+		$agency = self::agency_domains();
+		if ( empty( $agency ) ) {
+			return array( self::INFO, __( 'Fill in your own email domains under Settings, then this check can tell whether the client has an account of their own.', 'seo-health-check' ) );
+		}
+
+		$administrators = get_users(
+			array(
+				'role'   => 'administrator',
+				'fields' => array( 'user_login', 'user_email' ),
+				'number' => 100,
+			)
+		);
+
+		$client = array();
+		foreach ( $administrators as $user ) {
+			$domain = self::email_domain( $user->user_email );
+			if ( '' !== $domain && ! in_array( $domain, $agency, true ) ) {
+				$client[] = $user->user_login;
+			}
+		}
+
+		if ( $client ) {
+			return array(
+				self::PASS,
+				sprintf(
+					/* translators: %s: list of login names. */
+					__( 'The client has an administrator of their own: %s.', 'seo-health-check' ),
+					implode( ', ', $client )
+				),
+			);
+		}
+
+		return array( self::WARNING, __( 'Every administrator has an address on one of your own domains, so the client has no account yet. Do not forget the manual either.', 'seo-health-check' ) );
 	}
 
 	/**
