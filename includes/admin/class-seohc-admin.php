@@ -118,17 +118,40 @@ class SEOHC_Admin {
 	}
 
 	/**
-	 * Settings link on the Plugins screen.
+	 * Where the manual lives.
+	 *
+	 * @return string Empty when a site has filtered it away.
+	 */
+	public static function docs_url() {
+		/**
+		 * Filters the address of the documentation.
+		 *
+		 * @param string $url Documentation URL.
+		 */
+		return (string) apply_filters( 'seo_health_check_docs_url', 'https://mikaleonard.nl/seo-health-check/' );
+	}
+
+	/**
+	 * Settings and documentation links on the Plugins screen.
 	 *
 	 * @param array $links Existing links.
 	 * @return array
 	 */
 	public static function action_links( $links ) {
-		array_unshift(
-			$links,
-			sprintf( '<a href="%s">%s</a>', esc_url( admin_url( 'admin.php?page=' . SEOHC_Settings::PAGE_SLUG ) ), esc_html__( 'Settings', 'seo-health-check' ) )
+		$own = array(
+			sprintf( '<a href="%s">%s</a>', esc_url( admin_url( 'admin.php?page=' . SEOHC_Settings::PAGE_SLUG ) ), esc_html__( 'Settings', 'seo-health-check' ) ),
 		);
-		return $links;
+
+		$docs = self::docs_url();
+		if ( '' !== $docs ) {
+			$own[] = sprintf(
+				'<a href="%s" target="_blank" rel="noopener">%s</a>',
+				esc_url( $docs ),
+				esc_html__( 'Documentation', 'seo-health-check' )
+			);
+		}
+
+		return array_merge( $own, $links );
 	}
 
 	/**

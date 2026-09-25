@@ -299,6 +299,12 @@
 	font-weight: 600;
 }
 
+.seohc-about__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+}
+
 /* Automatic scan. */
 .seohc-days {
 	display: flex;

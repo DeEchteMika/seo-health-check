@@ -517,13 +517,19 @@ class SEOHC_Settings {
 			</tbody>
 		</table>
 
-		<?php if ( ! empty( $data['PluginURI'] ) ) : ?>
-			<p class="description">
+		<p class="description seohc-about__links">
+			<?php $docs = SEOHC_Admin::docs_url(); ?>
+			<?php if ( '' !== $docs ) : ?>
+				<a href="<?php echo esc_url( $docs ); ?>" target="_blank" rel="noopener">
+					<?php esc_html_e( 'Manual and examples', 'seo-health-check' ); ?>
+				</a>
+			<?php endif; ?>
+			<?php if ( ! empty( $data['PluginURI'] ) ) : ?>
 				<a href="<?php echo esc_url( $data['PluginURI'] ); ?>" target="_blank" rel="noopener">
 					<?php esc_html_e( 'The project page, where you can read what changed per version', 'seo-health-check' ); ?>
 				</a>
-			</p>
-		<?php endif; ?>
+			<?php endif; ?>
+		</p>
 		<?php
 	}
 }

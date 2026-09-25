@@ -4,7 +4,7 @@ Tags: seo, audit, meta description, alt text, broken links
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.10.0
+Stable tag: 0.10.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -182,6 +182,9 @@ Yes. Use the `seo_health_check_issue_types` filter to register a new issue type 
 5. The settings page.
 
 == Changelog ==
+
+= 0.10.1 =
+* New: a link to the manual, on the Plugins screen next to Settings and at the bottom of the settings screen. The `seo_health_check_docs_url` filter points it somewhere else.
 
 = 0.10.0 =
 * New: the Plugins screen now says when a newer release is available, and updating works from there, the same way it does for plugins from wordpress.org.

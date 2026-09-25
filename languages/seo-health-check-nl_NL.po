@@ -34,7 +34,7 @@ msgid "%1$d characters (max %2$d): %3$s"
 msgstr "%1$d tekens (max %2$d): %3$s"
 
 #. translators: 1: characters used, 2: recommended maximum.
-#: includes/admin/class-seohc-admin.php:168
+#: includes/admin/class-seohc-admin.php:191
 msgid "%1$d of %2$d characters"
 msgstr "%1$d van %2$d tekens"
 
@@ -81,8 +81,8 @@ msgid "%1$s of %2$s pages need attention"
 msgstr "%1$s van %2$s pagina’s hebben aandacht nodig"
 
 #. translators: 1: processed posts, 2: total posts.
-#: includes/admin/class-seohc-admin.php:163
-#: includes/admin/class-seohc-admin.php:586
+#: includes/admin/class-seohc-admin.php:186
+#: includes/admin/class-seohc-admin.php:609
 msgid "%1$s of %2$s pages scanned"
 msgstr "%1$s van %2$s pagina’s gescand"
 
@@ -147,14 +147,14 @@ msgstr[0] "%s probleem"
 msgstr[1] "%s problemen"
 
 #. translators: %s: number of issues.
-#: includes/admin/class-seohc-admin.php:506
+#: includes/admin/class-seohc-admin.php:529
 msgid "%s issue appeared"
 msgid_plural "%s issues appeared"
 msgstr[0] "%s probleem erbij"
 msgstr[1] "%s problemen erbij"
 
 #. translators: %s: number of issues.
-#: includes/admin/class-seohc-admin.php:516
+#: includes/admin/class-seohc-admin.php:539
 msgid "%s issue was solved"
 msgid_plural "%s issues were solved"
 msgstr[0] "%s probleem opgelost"
@@ -187,7 +187,7 @@ msgstr "(%s beter)"
 msgid "(%s worse)"
 msgstr "(%s slechter)"
 
-#: includes/admin/class-seohc-admin.php:604
+#: includes/admin/class-seohc-admin.php:627
 msgid "(cancelled)"
 msgstr "(geannuleerd)"
 
@@ -217,7 +217,7 @@ msgstr "[Test] %s"
 msgid "A form plugin is active but no forms were made yet."
 msgstr "Er is een formulierplugin actief, maar er zijn nog geen formulieren gemaakt."
 
-#: includes/admin/class-seohc-admin.php:369
+#: includes/admin/class-seohc-admin.php:392
 msgid "A scan is already running."
 msgstr "Er loopt al een scan."
 
@@ -249,7 +249,7 @@ msgstr "Activeer Yoast SEO of Rank Math om dit veld op te slaan."
 msgid "After launch"
 msgstr "Na de livegang"
 
-#: includes/admin/class-seohc-admin.php:488
+#: includes/admin/class-seohc-admin.php:511
 msgid "After the next scan you will also see what changed since this one."
 msgstr "Na de volgende scan zie je hier ook wat er sinds deze scan is veranderd."
 
@@ -312,7 +312,7 @@ msgstr "Automatisch scannen"
 msgid "Automatic: use the rendered page when the post content is empty (page builders)"
 msgstr "Automatisch: de weergegeven pagina gebruiken als de berichtinhoud leeg is (paginabouwers)"
 
-#: includes/admin/class-seohc-admin.php:453
+#: includes/admin/class-seohc-admin.php:476
 #: includes/admin/class-seohc-dashboard-widget.php:48
 #: includes/admin/class-seohc-scans-page.php:62
 #: includes/class-seohc-mailer.php:174
@@ -339,7 +339,7 @@ msgstr "Kapotte interne link"
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: includes/admin/class-seohc-admin.php:592
+#: includes/admin/class-seohc-admin.php:615
 msgid "Cancel scan"
 msgstr "Scan annuleren"
 
@@ -401,7 +401,7 @@ msgstr "Cookieplugin actief: %s"
 msgid "could not be read: %s"
 msgstr "konden niet worden uitgelezen: %s"
 
-#: includes/admin/class-seohc-admin.php:166
+#: includes/admin/class-seohc-admin.php:189
 msgid "Could not save. Try again."
 msgstr "Opslaan is niet gelukt. Probeer het opnieuw."
 
@@ -450,6 +450,10 @@ msgstr "DKIM wordt niet gecontroleerd: vul bij Instellingen de selector van je m
 #: includes/class-seohc-settings.php:234
 msgid "DKIM selector"
 msgstr "DKIM-selector"
+
+#: includes/admin/class-seohc-admin.php:150
+msgid "Documentation"
+msgstr "Documentatie"
 
 #: includes/admin/class-seohc-schedule-page.php:157
 msgid "Download"
@@ -501,7 +505,7 @@ msgstr "Elk formulier stuurt de bezoeker daarna naar een eigen pagina."
 msgid "Every menu item leads to a published page."
 msgstr "Elk menu-item leidt naar een gepubliceerde pagina."
 
-#: includes/admin/class-seohc-admin.php:543
+#: includes/admin/class-seohc-admin.php:566
 msgid "Every scanned page scores from 0 to 100. Each kind of problem costs points, errors twice as much as warnings, and repeats of the same problem a little extra."
 msgstr "Elke gescande pagina krijgt een score van 0 tot 100. Elk soort probleem kost punten, een fout twee keer zoveel als een waarschuwing, en herhalingen van hetzelfde probleem nog iets extra."
 
@@ -509,7 +513,7 @@ msgstr "Elke gescande pagina krijgt een score van 0 tot 100. Elk soort probleem 
 msgid "Everything is up to date."
 msgstr "Alles is up-to-date."
 
-#: includes/admin/class-seohc-admin.php:416
+#: includes/admin/class-seohc-admin.php:439
 msgid "Export CSV"
 msgstr "CSV exporteren"
 
@@ -564,7 +568,7 @@ msgstr "Filteren op status"
 msgid "Finished"
 msgstr "Afgerond"
 
-#: includes/admin/class-seohc-admin.php:512
+#: includes/admin/class-seohc-admin.php:535
 #: includes/admin/class-seohc-dashboard-widget.php:109
 #: includes/admin/class-seohc-issues-list-table.php:279
 #: includes/admin/class-seohc-scans-page.php:65
@@ -662,7 +666,7 @@ msgid "Issue"
 msgstr "Probleem"
 
 #. translators: %s: link to the issues overview.
-#: includes/admin/class-seohc-admin.php:462
+#: includes/admin/class-seohc-admin.php:485
 #: includes/admin/class-seohc-admin.php:69
 #: includes/admin/class-seohc-pages-list-table.php:52
 #: includes/admin/class-seohc-scans-page.php:38
@@ -690,7 +694,7 @@ msgid "Last run: %s"
 msgstr "Laatst uitgevoerd: %s"
 
 #. translators: %s: date and time of the last scan.
-#: includes/admin/class-seohc-admin.php:600
+#: includes/admin/class-seohc-admin.php:623
 #: includes/admin/class-seohc-dashboard-widget.php:145
 msgid "Last scan: %s"
 msgstr "Laatste scan: %s"
@@ -717,6 +721,10 @@ msgstr "Linkt naar content met status \"%s\"."
 #: includes/class-seohc-launch-checks.php:103
 msgid "Mail delivery set up"
 msgstr "Mailbezorging ingesteld"
+
+#: includes/class-seohc-settings.php:524
+msgid "Manual and examples"
+msgstr "Handleiding en voorbeelden"
 
 #: includes/class-seohc-settings.php:160
 msgid "Maximum image size"
@@ -778,7 +786,7 @@ msgstr "Mijn thema toont de berichttitel als H1 boven de content"
 msgid "Needs work"
 msgstr "Kan beter"
 
-#: includes/admin/class-seohc-admin.php:502
+#: includes/admin/class-seohc-admin.php:525
 #: includes/admin/class-seohc-dashboard-widget.php:105
 #: includes/admin/class-seohc-issues-list-table.php:287
 #: includes/admin/class-seohc-scans-page.php:64
@@ -971,19 +979,19 @@ msgstr "Paginabouwers zoals Oxygen, Breakdance en Elementor slaan hun opmaak bui
 msgid "Page could not be loaded"
 msgstr "Pagina kon niet worden geladen"
 
-#: includes/admin/class-seohc-admin.php:541
+#: includes/admin/class-seohc-admin.php:564
 #: includes/admin/class-seohc-admin.php:70
 #: includes/admin/class-seohc-dashboard-widget.php:80
 msgid "Page scores"
 msgstr "Paginascores"
 
-#: includes/admin/class-seohc-admin.php:480
+#: includes/admin/class-seohc-admin.php:503
 #: includes/admin/class-seohc-scans-page.php:67
 #: includes/class-seohc-mailer.php:177
 msgid "Pages scanned"
 msgstr "Pagina’s gescand"
 
-#: includes/admin/class-seohc-admin.php:471
+#: includes/admin/class-seohc-admin.php:494
 #: includes/admin/class-seohc-scans-page.php:66
 #: includes/class-seohc-mailer.php:176
 msgid "Pages with issues"
@@ -1098,12 +1106,12 @@ msgid "Saved, but the issue is still reported."
 msgstr "Opgeslagen, maar het probleem wordt nog steeds gemeld."
 
 #. translators: 1: processed posts, 2: total posts.
-#: includes/admin/class-seohc-admin.php:165
+#: includes/admin/class-seohc-admin.php:188
 msgid "Saving…"
 msgstr "Bezig met opslaan…"
 
 #. translators: 1: processed posts, 2: total posts.
-#: includes/admin/class-seohc-admin.php:164
+#: includes/admin/class-seohc-admin.php:187
 msgid "Scan finished. Reloading…"
 msgstr "Scan afgerond. Bezig met herladen…"
 
@@ -1112,7 +1120,7 @@ msgstr "Scan afgerond. Bezig met herladen…"
 msgid "Scan history"
 msgstr "Scangeschiedenis"
 
-#: includes/admin/class-seohc-admin.php:579
+#: includes/admin/class-seohc-admin.php:602
 msgid "Scan in progress"
 msgstr "Scan bezig"
 
@@ -1155,12 +1163,12 @@ msgstr "Zoekmachines mogen de site indexeren."
 msgid "Search engines may index the site"
 msgstr "Zoekmachines mogen de site indexeren"
 
-#: includes/admin/class-seohc-admin.php:433
-#: includes/admin/class-seohc-admin.php:560
+#: includes/admin/class-seohc-admin.php:456
+#: includes/admin/class-seohc-admin.php:583
 msgid "Search pages"
 msgstr "Pagina’s zoeken"
 
-#: includes/admin/class-seohc-admin.php:523
+#: includes/admin/class-seohc-admin.php:546
 msgid "See all scans"
 msgstr "Alle scans bekijken"
 
@@ -1184,7 +1192,7 @@ msgstr "Stuurt nu meteen het rapport van de laatste scan, zodat je kunt zien of 
 msgid "SEO Health"
 msgstr "SEO Health"
 
-#: includes/admin/class-seohc-admin.php:414
+#: includes/admin/class-seohc-admin.php:437
 #: includes/admin/class-seohc-admin.php:61
 #: includes/admin/class-seohc-dashboard-widget.php:25
 msgid "SEO Health Check"
@@ -1208,7 +1216,7 @@ msgstr "SEO-rapport voor %1$s, %2$s"
 msgid "SEO title"
 msgstr "SEO-titel"
 
-#: includes/admin/class-seohc-admin.php:129
+#: includes/admin/class-seohc-admin.php:142
 #: includes/admin/class-seohc-admin.php:74
 msgid "Settings"
 msgstr "Instellingen"
@@ -1240,7 +1248,7 @@ msgstr "Sinds"
 msgid "since the previous scan"
 msgstr "sinds de vorige scan"
 
-#: includes/admin/class-seohc-admin.php:522
+#: includes/admin/class-seohc-admin.php:545
 msgid "since the previous scan."
 msgstr "sinds de vorige scan."
 
@@ -1283,7 +1291,7 @@ msgstr "Standaardplugins geïnstalleerd"
 msgid "Start a scan"
 msgstr "Een scan starten"
 
-#: includes/admin/class-seohc-admin.php:614
+#: includes/admin/class-seohc-admin.php:637
 msgid "Start full scan"
 msgstr "Volledige scan starten"
 
@@ -1306,7 +1314,7 @@ msgid "That report no longer exists."
 msgstr "Dat rapport bestaat niet meer."
 
 #. translators: %s: average score.
-#: includes/admin/class-seohc-admin.php:547
+#: includes/admin/class-seohc-admin.php:570
 msgid "The average for this site is %s."
 msgstr "Het gemiddelde van deze site is %s."
 
@@ -1398,7 +1406,7 @@ msgstr "De pagina heeft geen H1-kop."
 msgid "The page returned HTTP status %d."
 msgstr "De pagina gaf HTTP-status %d terug."
 
-#: includes/admin/class-seohc-admin.php:371
+#: includes/admin/class-seohc-admin.php:394
 msgid "The page was rescanned."
 msgstr "De pagina is opnieuw gescand."
 
@@ -1414,7 +1422,7 @@ msgstr "Het bericht heeft geen openbare URL."
 msgid "The post has no title."
 msgstr "Het bericht heeft geen titel."
 
-#: includes/class-seohc-settings.php:523
+#: includes/class-seohc-settings.php:529
 msgid "The project page, where you can read what changed per version"
 msgstr "De projectpagina, waar je per versie kunt lezen wat er is veranderd"
 
@@ -1427,7 +1435,7 @@ msgstr "Het rapport"
 msgid "The results of the latest scan of %s."
 msgstr "De resultaten van de laatste scan van %s."
 
-#: includes/admin/class-seohc-admin.php:368
+#: includes/admin/class-seohc-admin.php:391
 msgid "The scan has started and runs in the background. You can leave this page."
 msgstr "De scan is gestart en draait op de achtergrond. Je kunt deze pagina rustig verlaten."
 
@@ -1436,7 +1444,7 @@ msgstr "De scan is gestart en draait op de achtergrond. Je kunt deze pagina rust
 msgid "The scan of %1$s compared with the one of %2$s."
 msgstr "De scan van %1$s vergeleken met die van %2$s."
 
-#: includes/admin/class-seohc-admin.php:370
+#: includes/admin/class-seohc-admin.php:393
 msgid "The scan was cancelled. Results scanned so far are kept."
 msgstr "De scan is geannuleerd. Wat tot nu toe is gescand blijft bewaard."
 
@@ -1536,7 +1544,7 @@ msgstr "Dit resultaat bestaat niet meer. Ververs de pagina."
 msgid "This server does not allow DNS lookups, so the mail records cannot be checked from here."
 msgstr "Deze server staat geen DNS-opvragingen toe, dus de mailrecords kunnen hiervandaan niet worden gecontroleerd."
 
-#: includes/admin/class-seohc-admin.php:607
+#: includes/admin/class-seohc-admin.php:630
 #: includes/admin/class-seohc-dashboard-widget.php:159
 msgid "This site has not been scanned yet."
 msgstr "Deze site is nog niet gescand."
@@ -1582,7 +1590,7 @@ msgstr "Type"
 msgid "Unchanged"
 msgstr "Onveranderd"
 
-#: includes/admin/class-seohc-admin.php:262
+#: includes/admin/class-seohc-admin.php:285
 msgid "unchanged"
 msgstr "gelijk"
 
@@ -1693,7 +1701,7 @@ msgstr "XML-sitemap"
 msgid "You do not have permission to access this page."
 msgstr "Je hebt geen toestemming om deze pagina te bekijken."
 
-#: includes/admin/class-seohc-admin.php:280
+#: includes/admin/class-seohc-admin.php:303
 #: includes/admin/class-seohc-inline-edit.php:155
 #: includes/admin/class-seohc-scans-page.php:20
 #: includes/admin/class-seohc-schedule-page.php:269
